@@ -8,6 +8,7 @@ export const modules: ModuleMap = {
   "./components/mockups/crm-saas/ChatbotFlow.tsx": () => import("../components/mockups/crm-saas/ChatbotFlow.tsx"),
   "./components/mockups/crm-saas/Dashboard.tsx": () => import("../components/mockups/crm-saas/Dashboard.tsx"),
   "./components/mockups/crm-saas/DocumentTraining.tsx": () => import("../components/mockups/crm-saas/DocumentTraining.tsx"),
+  "./components/mockups/crm-saas/FacebookInstagramSetup.tsx": () => import("../components/mockups/crm-saas/FacebookInstagramSetup.tsx"),
   "./components/mockups/crm-saas/LeadsPipeline.tsx": () => import("../components/mockups/crm-saas/LeadsPipeline.tsx"),
   "./components/mockups/crm-saas/Reports.tsx": () => import("../components/mockups/crm-saas/Reports.tsx"),
   "./components/mockups/crm-saas/Settings.tsx": () => import("../components/mockups/crm-saas/Settings.tsx"),
