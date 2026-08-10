@@ -3,9 +3,11 @@ type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/crm-saas/AISequence.tsx": () => import("../components/mockups/crm-saas/AISequence.tsx"),
   "./components/mockups/crm-saas/AuthPages.tsx": () => import("../components/mockups/crm-saas/AuthPages.tsx"),
+  "./components/mockups/crm-saas/AuthPagesVariant.tsx": () => import("../components/mockups/crm-saas/AuthPagesVariant.tsx"),
   "./components/mockups/crm-saas/Campaigns.tsx": () => import("../components/mockups/crm-saas/Campaigns.tsx"),
   "./components/mockups/crm-saas/ChatbotFlow.tsx": () => import("../components/mockups/crm-saas/ChatbotFlow.tsx"),
   "./components/mockups/crm-saas/Dashboard.tsx": () => import("../components/mockups/crm-saas/Dashboard.tsx"),
+  "./components/mockups/crm-saas/DocumentTraining.tsx": () => import("../components/mockups/crm-saas/DocumentTraining.tsx"),
   "./components/mockups/crm-saas/LeadsPipeline.tsx": () => import("../components/mockups/crm-saas/LeadsPipeline.tsx"),
   "./components/mockups/crm-saas/Reports.tsx": () => import("../components/mockups/crm-saas/Reports.tsx"),
   "./components/mockups/crm-saas/Settings.tsx": () => import("../components/mockups/crm-saas/Settings.tsx"),
