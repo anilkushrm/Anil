@@ -3,7 +3,7 @@ import { Activity, BarChart3, BellRing, Bot, ChevronDown, Contact, FileText, Inb
 
 const items = [
   ["Dashboard", LayoutDashboard], ["Inbox", Inbox], ["Contacts", Contact], ["Leads Pipeline", BarChart3],
-  ["Campaigns", Megaphone], ["WhatsApp Templates", FileText], ["Chatbot Flows", Bot], ["Broadcasts", BellRing],
+  ["Campaigns", Megaphone], ["WhatsApp Templates", FileText], ["Chatbot Flows", Bot], ["AI & Sequences", Sparkles], ["Broadcasts", BellRing],
   ["Reports", Activity], ["Settings", Settings],
 ] as const;
 
