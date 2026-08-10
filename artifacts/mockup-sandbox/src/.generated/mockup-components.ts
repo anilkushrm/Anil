@@ -12,5 +12,7 @@ export const modules: ModuleMap = {
   "./components/mockups/crm-saas/Reports.tsx": () => import("../components/mockups/crm-saas/Reports.tsx"),
   "./components/mockups/crm-saas/Settings.tsx": () => import("../components/mockups/crm-saas/Settings.tsx"),
   "./components/mockups/crm-saas/UnifiedInbox.tsx": () => import("../components/mockups/crm-saas/UnifiedInbox.tsx"),
-  "./components/mockups/crm-saas/WATemplates.tsx": () => import("../components/mockups/crm-saas/WATemplates.tsx")
+  "./components/mockups/crm-saas/WATemplates.tsx": () => import("../components/mockups/crm-saas/WATemplates.tsx"),
+  "./components/mockups/crm-saas/WebhookWorkflows.tsx": () => import("../components/mockups/crm-saas/WebhookWorkflows.tsx"),
+  "./components/mockups/crm-saas/WhatsAppConnect.tsx": () => import("../components/mockups/crm-saas/WhatsAppConnect.tsx")
 };
