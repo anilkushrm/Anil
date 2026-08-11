@@ -1,65 +1,88 @@
 import { useState } from "react";
 import {
-  Zap, Check, ArrowRight, MessageSquare, Instagram, Star,
+  Zap, Check, ArrowRight, MessageSquare, Instagram,
   Shield, Users, Bot, BarChart3, Webhook, Globe, ChevronDown,
-  Phone, Sparkles, Infinity, Crown,
+  Sparkles, Infinity, Crown, Phone, Mail,
 } from "lucide-react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const PLANS = [
   {
+    id: "basic",
+    name: "Basic",
+    price: 499,
+    badge: null,
+    popular: false,
+    headerCls: "from-slate-600 to-slate-700",
+    btnCls: "bg-slate-700 hover:bg-slate-800 text-white",
+    limit: "1,000 Subscribers",
+    limitNote: "Max 1,000 contacts",
+    description: "Nayi shuruwat ke liye — limited subscribers, sab channels included",
+    features: [
+      "1,000 Subscribers / Contacts",
+      "WhatsApp + Instagram + Facebook",
+      "Unified Inbox",
+      "Basic Chatbot Builder",
+      "WhatsApp Templates",
+      "Lead Pipeline",
+      "1 Team Member",
+      "WA Credits Wallet",
+      "Email Support",
+    ],
+    notIncluded: ["AI Auto-Reply", "AI Sequences", "Broadcast Campaigns", "Webhooks", "Priority Support"],
+  },
+  {
     id: "starter",
     name: "Starter",
     price: 999,
     badge: null,
-    color: "from-slate-700 to-slate-800",
-    accent: "#64748b",
-    accentLight: "#f1f5f9",
-    accentText: "#475569",
-    btnCls: "bg-slate-800 hover:bg-slate-900 text-white",
-    description: "Chhote businesses ke liye — unlimited messages, zero complexity",
+    popular: false,
+    headerCls: "from-[#1e3a5f] to-[#0f172a]",
+    btnCls: "bg-[#0f172a] hover:bg-[#1e3a5f] text-white",
+    limit: "Unlimited",
+    limitNote: "Unlimited messages",
+    description: "Grow karo bina limit ke — unlimited messages, zero complexity",
     features: [
-      { label: "Unlimited WhatsApp Messages", icon: MessageSquare },
-      { label: "Unlimited Instagram DMs", icon: Instagram },
-      { label: "Unlimited Facebook Messages", icon: Globe },
-      { label: "Unified Inbox (All channels)", icon: Users },
-      { label: "Lead Pipeline (Kanban)", icon: BarChart3 },
-      { label: "Basic Chatbot Builder", icon: Bot },
-      { label: "WhatsApp Templates", icon: MessageSquare },
-      { label: "1 Team Member", icon: Users },
-      { label: "WA Credits Wallet (Topup)", icon: Zap },
-      { label: "Email Support", icon: Shield },
+      "Unlimited Subscribers",
+      "WhatsApp + Instagram + Facebook",
+      "Unified Inbox (All channels)",
+      "Advanced Chatbot Builder",
+      "WhatsApp Templates",
+      "Lead Pipeline (Kanban)",
+      "Broadcast Campaigns",
+      "3 Team Members",
+      "WA Credits Wallet",
+      "Email Support",
     ],
-    notIncluded: ["AI Auto-Reply", "AI Memory & CRM Sync", "AI Sequences", "Priority Support", "White Label"],
+    notIncluded: ["AI Auto-Reply", "AI Sequences", "Webhooks", "Priority Support"],
   },
   {
     id: "growth",
     name: "Growth",
     price: 2499,
     badge: "Most Popular",
-    color: "from-[#15803d] to-[#166534]",
-    accent: "#22c55e",
-    accentLight: "#f0fdf4",
-    accentText: "#166534",
+    popular: true,
+    headerCls: "from-[#15803d] to-[#166534]",
     btnCls: "bg-[#22c55e] hover:bg-[#16a34a] text-white",
-    description: "AI ke saath grow karein — smart replies, sequences, aur full automation",
+    limit: "Unlimited + AI",
+    limitNote: "AI-powered automation",
+    description: "Full AI automation — smart replies, sequences, aur sabkuch",
     features: [
-      { label: "Sab Starter features +", icon: Check },
-      { label: "Unlimited WhatsApp Messages", icon: MessageSquare },
-      { label: "Unlimited Instagram DMs", icon: Instagram },
-      { label: "Unlimited Facebook Messages", icon: Globe },
-      { label: "AI Auto-Reply (GPT powered)", icon: Bot },
-      { label: "AI Memory & CRM Sync", icon: Sparkles },
-      { label: "AI Follow-up Sequences", icon: Zap },
-      { label: "Advanced Chatbot Builder", icon: Bot },
-      { label: "Broadcast Campaigns", icon: BarChart3 },
-      { label: "Webhook & Integrations", icon: Webhook },
-      { label: "5 Team Members", icon: Users },
-      { label: "Reports & Analytics", icon: BarChart3 },
-      { label: "Priority Support", icon: Shield },
+      "Unlimited Subscribers",
+      "WhatsApp + Instagram + Facebook",
+      "Unified Inbox (All channels)",
+      "AI Auto-Reply (GPT powered) ✨",
+      "AI Memory & CRM Sync ✨",
+      "AI Follow-up Sequences ✨",
+      "Advanced Chatbot Builder",
+      "Broadcast Campaigns",
+      "Webhook & Integrations",
+      "5 Team Members",
+      "Reports & Analytics",
+      "Priority Support",
     ],
-    notIncluded: ["White Label", "Dedicated Manager"],
+    notIncluded: ["White Label"],
   },
 ];
 
@@ -148,10 +171,10 @@ function PricingCards() {
 
   return (
     <section className="py-10 px-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Toggle */}
         <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-3 rounded-2xl bg-slate-100 p-1">
+          <div className="flex items-center gap-1 rounded-2xl bg-slate-100 p-1">
             <button onClick={() => setAnnual(false)} className={`rounded-xl px-5 py-2 text-[13px] font-bold transition ${!annual ? "bg-white shadow text-slate-900" : "text-slate-500"}`}>Monthly</button>
             <button onClick={() => setAnnual(true)} className={`rounded-xl px-5 py-2 text-[13px] font-bold transition flex items-center gap-2 ${annual ? "bg-white shadow text-slate-900" : "text-slate-500"}`}>
               Annual
@@ -160,61 +183,65 @@ function PricingCards() {
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid md:grid-cols-2 gap-6 items-start">
+        {/* 3 Plan Cards */}
+        <div className="grid md:grid-cols-3 gap-5 items-start">
           {PLANS.map((plan) => {
             const price = annual ? Math.round(plan.price * 0.8) : plan.price;
-            const isPopular = plan.badge === "Most Popular";
             return (
-              <div key={plan.id} className={`relative rounded-3xl border ${isPopular ? "border-[#22c55e] shadow-[0_0_0_3px_#dcfce7,0_20px_60px_rgba(34,197,94,.12)]" : "border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,.06)]"} bg-white overflow-hidden`}>
+              <div key={plan.id} className={`relative rounded-3xl border bg-white overflow-hidden flex flex-col
+                ${plan.popular
+                  ? "border-[#22c55e] shadow-[0_0_0_3px_#dcfce7,0_20px_60px_rgba(34,197,94,.15)] scale-[1.02]"
+                  : "border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,.07)]"}`}>
 
                 {plan.badge && (
-                  <div className="absolute top-5 right-5">
-                    <span className="flex items-center gap-1 rounded-full bg-[#22c55e] px-3 py-1 text-[10px] font-bold text-white">
-                      <Crown size={10} /> {plan.badge}
+                  <div className="absolute top-4 right-4 z-10">
+                    <span className="flex items-center gap-1 rounded-full bg-[#22c55e] px-3 py-1 text-[10px] font-bold text-white shadow">
+                      <Crown size={9} /> {plan.badge}
                     </span>
                   </div>
                 )}
 
                 {/* Header */}
-                <div className={`bg-gradient-to-br ${plan.color} p-6 pb-8`}>
-                  <div className="text-[13px] font-bold text-white/70 mb-1">{plan.name}</div>
-                  <div className="flex items-end gap-1 mb-2">
-                    <span className="text-[14px] font-bold text-white/80 mt-1">₹</span>
-                    <span className="text-[52px] font-extrabold text-white leading-none">{price.toLocaleString()}</span>
-                    <span className="text-[13px] font-semibold text-white/60 mb-2">/month</span>
+                <div className={`bg-gradient-to-br ${plan.headerCls} p-5 pb-7`}>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-white/60 mb-2">{plan.name}</div>
+                  <div className="flex items-end gap-1 mb-1">
+                    <span className="text-[13px] font-bold text-white/70 mt-1">₹</span>
+                    <span className="text-[46px] font-extrabold text-white leading-none">{price.toLocaleString()}</span>
+                    <span className="text-[12px] font-semibold text-white/50 mb-1.5">/mo</span>
                   </div>
-                  {annual && <div className="text-[11px] text-white/60 mb-3">₹{(price * 12).toLocaleString()} billed annually</div>}
-                  <p className="text-[12px] text-white/70 leading-relaxed">{plan.description}</p>
+                  {annual && <div className="text-[10px] text-white/50 mb-2">₹{(price * 12).toLocaleString()} billed yearly</div>}
+                  <p className="text-[11px] text-white/60 leading-relaxed">{plan.description}</p>
                 </div>
 
-                {/* Infinity badge */}
-                <div className="mx-6 -mt-4 mb-5 flex items-center gap-2 rounded-2xl bg-white border border-slate-100 shadow-sm px-4 py-2.5">
-                  <Infinity size={16} className="text-[#22c55e] shrink-0" />
-                  <span className="text-[12px] font-bold text-slate-700">Unlimited WA + IG + FB Messages</span>
+                {/* Limit badge */}
+                <div className="mx-5 -mt-3.5 mb-4 flex items-center gap-2 rounded-xl bg-white border border-slate-100 shadow-sm px-3.5 py-2">
+                  {plan.id === "basic"
+                    ? <Users size={14} className="text-slate-500 shrink-0" />
+                    : <Infinity size={14} className="text-[#22c55e] shrink-0" />}
+                  <span className="text-[11.5px] font-bold text-slate-700">{plan.limit}</span>
+                  <span className="text-[10px] text-slate-400">· {plan.limitNote}</span>
                 </div>
 
                 {/* Features */}
-                <div className="px-6 pb-2">
-                  <div className="space-y-2.5">
+                <div className="px-5 pb-2 flex-1">
+                  <div className="space-y-2">
                     {plan.features.map((f, i) => (
-                      <div key={i} className="flex items-center gap-2.5">
-                        <div className="h-5 w-5 rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
-                          <Check size={11} className="text-[#16a34a]" strokeWidth={3} />
+                      <div key={i} className="flex items-start gap-2">
+                        <div className="h-4.5 w-4.5 mt-0.5 rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0 h-[18px] w-[18px]">
+                          <Check size={10} className="text-[#16a34a]" strokeWidth={3} />
                         </div>
-                        <span className="text-[12.5px] text-slate-700 font-medium">{f.label}</span>
+                        <span className="text-[12px] text-slate-700 leading-relaxed">{f}</span>
                       </div>
                     ))}
                   </div>
-
                   {plan.notIncluded.length > 0 && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2.5 space-y-1.5 opacity-35">
                       {plan.notIncluded.map((f, i) => (
-                        <div key={i} className="flex items-center gap-2.5 opacity-40">
-                          <div className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                            <span className="text-[11px] text-slate-400 font-bold">✕</span>
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="h-[18px] w-[18px] rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                            <span className="text-[9px] text-slate-500 font-bold">✕</span>
                           </div>
-                          <span className="text-[12px] text-slate-500 line-through">{f}</span>
+                          <span className="text-[11px] text-slate-400 line-through">{f}</span>
                         </div>
                       ))}
                     </div>
@@ -222,24 +249,47 @@ function PricingCards() {
                 </div>
 
                 {/* CTA */}
-                <div className="p-6 pt-5">
-                  <button className={`w-full rounded-2xl py-3.5 text-[14px] font-bold transition flex items-center justify-center gap-2 ${plan.btnCls}`}>
-                    14 Days Free Trial <ArrowRight size={15} />
+                <div className="p-5 pt-4">
+                  <button className={`w-full rounded-xl py-3 text-[13px] font-bold transition flex items-center justify-center gap-2 ${plan.btnCls}`}>
+                    14 Days Free Trial <ArrowRight size={14} />
                   </button>
-                  <p className="text-center text-[11px] text-slate-400 mt-2">Koi credit card nahi chahiye</p>
+                  <p className="text-center text-[10px] text-slate-400 mt-1.5">Koi credit card nahi chahiye</p>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Enterprise note */}
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <div className="text-[14px] font-bold text-slate-800">Enterprise / White Label?</div>
-            <div className="text-[12px] text-slate-500 mt-0.5">Custom pricing · Dedicated manager · White label branding</div>
+        {/* Custom / Enterprise card */}
+        <div className="mt-5 rounded-3xl border-2 border-dashed border-slate-200 bg-gradient-to-r from-slate-50 to-white px-8 py-6 flex flex-col md:flex-row items-center gap-6">
+          <div className="h-14 w-14 shrink-0 rounded-2xl bg-gradient-to-br from-[#7c3aed] to-[#4f46e5] flex items-center justify-center shadow-lg shadow-purple-200">
+            <Sparkles size={24} className="text-white" />
           </div>
-          <button className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-[13px] font-bold text-slate-700 hover:border-slate-400 transition shadow-sm">Contact Us →</button>
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex items-center gap-2 justify-center md:justify-start mb-1">
+              <span className="text-[18px] font-extrabold text-slate-900">Custom / Enterprise</span>
+              <span className="rounded-full bg-purple-100 border border-purple-200 px-2.5 py-0.5 text-[10px] font-bold text-purple-700">Bespoke</span>
+            </div>
+            <p className="text-[13px] text-slate-500 leading-relaxed">
+              Zyada subscribers chahiye? White label branding? Dedicated server? Bulk pricing?
+              <br className="hidden md:block" /> Hum aapke hisaab se plan banate hain — koi bhi volume, koi bhi requirement.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-3 justify-center md:justify-start">
+              {["Unlimited seats", "White label", "Dedicated server", "Custom integrations", "SLA guarantee", "Dedicated manager"].map(f => (
+                <span key={f} className="flex items-center gap-1.5 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 shadow-sm">
+                  <Check size={10} className="text-[#22c55e]" strokeWidth={3} /> {f}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 shrink-0">
+            <button className="flex items-center gap-2 rounded-xl bg-[#7c3aed] px-6 py-3 text-[13px] font-bold text-white hover:bg-[#6d28d9] transition shadow-md shadow-purple-200">
+              <Phone size={14} /> Call Karein
+            </button>
+            <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-[13px] font-bold text-slate-700 hover:border-slate-300 transition">
+              <Mail size={14} /> Email Bhejein
+            </button>
+          </div>
         </div>
       </div>
     </section>
