@@ -4,10 +4,11 @@ import {
   ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip,
   Smile, Mic, CheckCheck, X, Zap, Star, TrendingUp,
   Settings, LogOut, Shield, HelpCircle, ChevronRight,
-  Camera, Image, FileText, BarChart3, Check,
+  Camera, Image, FileText, BarChart3, BookUser, Mail,
+  Tag, Clock,
 } from "lucide-react";
 
-type Screen = "inbox" | "chat" | "leads" | "notifications" | "profile";
+type Screen = "inbox" | "chat" | "leads" | "contacts" | "profile";
 type Channel = "all" | "whatsapp" | "instagram" | "facebook";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -63,14 +64,44 @@ function Av({ initials, cls = "bg-slate-100 text-slate-700", size = "md" }: { in
 
 // ─── INBOX ───────────────────────────────────────────────────────────────────
 
+function ConvoRow({ c, onChat }: { c: typeof CONVERSATIONS[0]; onChat: () => void }) {
+  return (
+    <button onClick={onChat} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition text-left">
+      <div className="relative shrink-0">
+        <Av initials={c.avatar} cls={c.unread ? "bg-[#dcfce7] text-[#166534]" : "bg-slate-100 text-slate-600"} />
+        {c.online && <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-white" />}
+        <ChannelBadge ch={c.channel} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-0.5">
+          <span className={`text-[13px] ${c.unread ? "font-bold text-slate-900" : "font-semibold text-slate-700"}`}>{c.name}</span>
+          <span className="text-[10px] text-slate-400 shrink-0 ml-2">{c.time}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-slate-500 truncate">{c.lastMsg}</span>
+          {c.unread > 0 && <span className="shrink-0 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#22c55e] px-1 text-[9px] font-bold text-white">{c.unread}</span>}
+        </div>
+        {c.tag && <span className="mt-1 inline-block rounded-full bg-orange-50 border border-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-600">{c.tag}</span>}
+      </div>
+    </button>
+  );
+}
+
 function InboxScreen({ onChat }: { onChat: () => void }) {
   const [filter, setFilter] = useState<Channel>("all");
   const [q, setQ] = useState("");
-  const list = CONVERSATIONS.filter(c => (filter === "all" || c.channel === filter) && c.name.toLowerCase().includes(q.toLowerCase()));
+
+  const allFiltered = CONVERSATIONS.filter(c =>
+    (filter === "all" || c.channel === filter) &&
+    c.name.toLowerCase().includes(q.toLowerCase())
+  );
+  const unread = allFiltered.filter(c => c.unread > 0);
+  const read   = allFiltered.filter(c => c.unread === 0);
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="px-4 pt-5 pb-3 border-b border-slate-100">
+      {/* Header */}
+      <div className="px-4 pt-5 pb-3 border-b border-slate-100 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[19px] font-bold text-slate-900">Inbox</span>
           <div className="flex gap-2">
@@ -80,7 +111,7 @@ function InboxScreen({ onChat }: { onChat: () => void }) {
         </div>
         <div className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 mb-3">
           <Search size={14} className="text-slate-400 shrink-0" />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search…" className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-slate-400" />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search conversations…" className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-slate-400" />
         </div>
         <div className="flex gap-1.5">
           {(["all","whatsapp","instagram","facebook"] as Channel[]).map(k => (
@@ -91,27 +122,32 @@ function InboxScreen({ onChat }: { onChat: () => void }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
-        {list.map(c => (
-          <button key={c.id} onClick={onChat} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition text-left">
-            <div className="relative shrink-0">
-              <Av initials={c.avatar} cls={c.unread ? "bg-[#dcfce7] text-[#166534]" : "bg-slate-100 text-slate-600"} />
-              {c.online && <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-white" />}
-              <ChannelBadge ch={c.channel} />
+      <div className="flex-1 overflow-y-auto">
+        {/* ── Unread section ── */}
+        {unread.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#166534]">Unread · {unread.length}</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-0.5">
-                <span className={`text-[13px] ${c.unread ? "font-bold text-slate-900" : "font-semibold text-slate-700"}`}>{c.name}</span>
-                <span className="text-[10px] text-slate-400 shrink-0 ml-2">{c.time}</span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] text-slate-500 truncate">{c.lastMsg}</span>
-                {c.unread > 0 && <span className="shrink-0 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#22c55e] px-1 text-[9px] font-bold text-white">{c.unread}</span>}
-              </div>
-              {c.tag && <span className="mt-1 inline-block rounded-full bg-orange-50 border border-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-600">{c.tag}</span>}
+            <div className="bg-[#f0fdf4] divide-y divide-green-50 border-y border-green-100">
+              {unread.map(c => <ConvoRow key={c.id} c={c} onChat={onChat} />)}
             </div>
-          </button>
-        ))}
+          </>
+        )}
+
+        {/* ── All / Read section ── */}
+        {read.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">
+              <Clock size={10} className="text-slate-400" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Recent</span>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {read.map(c => <ConvoRow key={c.id} c={c} onChat={onChat} />)}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -275,34 +311,81 @@ function LeadsScreen() {
   );
 }
 
-// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+// ─── CONTACTS ────────────────────────────────────────────────────────────────
 
-function NotificationsScreen() {
+const CONTACTS = [
+  { id: "ct1", name: "Rahul Sharma",  avatar: "RS", phone: "+91 98765 43210", tag: "Hot Lead",   channel: "whatsapp"  as const, lastSeen: "2m ago"  },
+  { id: "ct2", name: "Priya Mehta",   avatar: "PM", phone: "@priya.mehta",    tag: "Customer",   channel: "instagram" as const, lastSeen: "15m ago" },
+  { id: "ct3", name: "Ankit Patel",   avatar: "AP", phone: "+91 90000 11122", tag: "Won",        channel: "whatsapp"  as const, lastSeen: "1h ago"  },
+  { id: "ct4", name: "Sunita Roy",    avatar: "SR", phone: "Sunita Roy Page", tag: "Follow-up",  channel: "facebook"  as const, lastSeen: "2h ago"  },
+  { id: "ct5", name: "Manish Kumar",  avatar: "MK", phone: "+91 77889 00012", tag: "New",        channel: "whatsapp"  as const, lastSeen: "3h ago"  },
+  { id: "ct6", name: "Deepa Singh",   avatar: "DS", phone: "@deepasingh_co",  tag: "Interested", channel: "instagram" as const, lastSeen: "5h ago"  },
+  { id: "ct7", name: "Vikram Nair",   avatar: "VN", phone: "+91 88001 23456", tag: "Cold",       channel: "whatsapp"  as const, lastSeen: "1d ago"  },
+];
+
+const TAG_COLORS: Record<string, string> = {
+  "Hot Lead":   "bg-orange-50 text-orange-600 border-orange-100",
+  "Customer":   "bg-blue-50 text-blue-600 border-blue-100",
+  "Won":        "bg-green-50 text-green-700 border-green-100",
+  "Follow-up":  "bg-purple-50 text-purple-600 border-purple-100",
+  "New":        "bg-slate-100 text-slate-600 border-slate-200",
+  "Interested": "bg-yellow-50 text-yellow-700 border-yellow-100",
+  "Cold":       "bg-slate-50 text-slate-400 border-slate-100",
+};
+
+function ContactsScreen({ onChat }: { onChat: () => void }) {
+  const [q, setQ] = useState("");
+  const list = CONTACTS.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
+
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
-      <div className="bg-white px-4 pt-5 pb-4 border-b border-slate-100 shrink-0">
-        <div className="flex items-center justify-between">
-          <span className="text-[19px] font-bold text-slate-900">Notifications</span>
-          <button className="text-[11px] font-bold text-[#16a34a]">Mark all read</button>
+      {/* Header */}
+      <div className="bg-white px-4 pt-5 pb-3 border-b border-slate-100 shrink-0">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[19px] font-bold text-slate-900">Contacts</span>
+          <button className="h-8 w-8 flex items-center justify-center rounded-full bg-[#22c55e]"><Plus size={15} className="text-white" /></button>
+        </div>
+        <div className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2">
+          <Search size={14} className="text-slate-400 shrink-0" />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search contacts…" className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-slate-400" />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-        {NOTIFICATIONS.map(n => {
-          const Icon = n.icon;
-          return (
-            <div key={n.id} className={`flex items-start gap-3 px-4 py-4 ${n.unread ? "bg-[#f0fdf4]" : "bg-white"}`}>
-              <div className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-2xl ${n.color}`}><Icon size={18} /></div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-[12px] font-bold text-slate-800">{n.title}</span>
-                  <span className="text-[10px] text-slate-400 shrink-0">{n.time}</span>
-                </div>
-                <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{n.body}</div>
-              </div>
-              {n.unread && <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#22c55e]" />}
+
+      {/* Stats row */}
+      <div className="px-4 py-3 flex gap-2 shrink-0">
+        {[["7", "Total"],["3","Unread"],["2","Hot Leads"]].map(([n, l]) => (
+          <div key={l} className="flex-1 rounded-2xl bg-white shadow-[0_1px_4px_rgba(15,23,42,.06)] p-3 text-center">
+            <div className="text-[18px] font-bold text-slate-800">{n}</div>
+            <div className="text-[9px] font-semibold text-slate-400 mt-0.5">{l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* List */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+        {list.map(c => (
+          <div key={c.id} className="rounded-2xl bg-white shadow-[0_1px_4px_rgba(15,23,42,.06)] px-4 py-3.5 flex items-center gap-3">
+            <div className="relative shrink-0">
+              <Av initials={c.avatar} />
+              <ChannelBadge ch={c.channel} />
             </div>
-          );
-        })}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-0.5">
+                <span className="text-[13px] font-bold text-slate-800">{c.name}</span>
+                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${TAG_COLORS[c.tag]}`}>{c.tag}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <span className="truncate">{c.phone}</span>
+                <span>·</span>
+                <span className="shrink-0">{c.lastSeen}</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5 shrink-0">
+              <button onClick={onChat} className="h-7 w-7 flex items-center justify-center rounded-full bg-green-50 text-green-600"><MessageSquare size={13} /></button>
+              <button className="h-7 w-7 flex items-center justify-center rounded-full bg-blue-50 text-blue-600"><Phone size={13} /></button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -361,10 +444,10 @@ function ProfileScreen() {
 function TabBar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void }) {
   const totalUnread = CONVERSATIONS.reduce((s, c) => s + c.unread, 0);
   const tabs: [Screen, typeof MessageSquare, string][] = [
-    ["inbox", MessageSquare, "Inbox"],
-    ["leads", Users, "Leads"],
-    ["notifications", Bell, "Alerts"],
-    ["profile", Settings, "Profile"],
+    ["inbox",    MessageSquare, "Inbox"   ],
+    ["leads",    Users,         "Leads"   ],
+    ["contacts", BookUser,      "Contacts"],
+    ["profile",  Settings,      "Profile" ],
   ];
   return (
     <div className="bg-white border-t border-slate-100 flex items-center justify-around px-2 pt-2 pb-5 shrink-0">
@@ -377,7 +460,6 @@ function TabBar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void 
             </div>
             <span className={`text-[9px] font-bold ${isActive ? "text-[#0f172a]" : "text-slate-400"}`}>{label}</span>
             {s === "inbox" && totalUnread > 0 && <span className="absolute top-0 right-2 h-4 min-w-[16px] flex items-center justify-center rounded-full bg-[#ef4444] px-1 text-[8px] font-bold text-white">{totalUnread}</span>}
-            {s === "notifications" && <span className="absolute top-0.5 right-2.5 h-2 w-2 rounded-full bg-[#ef4444]" />}
           </button>
         );
       })}
@@ -398,9 +480,9 @@ export default function MobileApp() {
     switch (screen) {
       case "inbox":         return <InboxScreen onChat={() => nav("chat")} />;
       case "chat":          return <ChatScreen  onBack={() => nav("inbox")} />;
-      case "leads":         return <LeadsScreen />;
-      case "notifications": return <NotificationsScreen />;
-      case "profile":       return <ProfileScreen />;
+      case "leads":    return <LeadsScreen />;
+      case "contacts": return <ContactsScreen onChat={() => nav("chat")} />;
+      case "profile":  return <ProfileScreen />;
     }
   };
 
@@ -460,7 +542,7 @@ export default function MobileApp() {
 
         {/* Nav pills */}
         <div className="flex gap-2 flex-wrap justify-center">
-          {([["inbox","💬 Inbox"],["chat","🗨️ Chat"],["leads","📊 Leads"],["notifications","🔔 Alerts"],["profile","👤 Profile"]] as [Screen,string][]).map(([s,label]) => (
+          {([["inbox","💬 Inbox"],["chat","🗨️ Chat"],["leads","📊 Leads"],["contacts","👥 Contacts"],["profile","👤 Profile"]] as [Screen,string][]).map(([s,label]) => (
             <button key={s} onClick={() => nav(s)} className={`rounded-full px-4 py-1.5 text-[11px] font-bold transition ${screen === s ? "bg-[#22c55e] text-white" : "bg-white/10 text-slate-400 hover:bg-white/15 hover:text-white"}`}>{label}</button>
           ))}
         </div>
