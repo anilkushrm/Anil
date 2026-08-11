@@ -25,7 +25,7 @@ function Brand() {
       </div>
       <div>
         <div className="font-[family-name:var(--font-display)] text-[17px] font-bold tracking-[-.03em] text-white">
-          Connectly <span className="text-[#8cf2a7]">CRM</span>
+          Ai Botflow <span className="text-[#8cf2a7]">CRM</span>
         </div>
         <div className="mt-0.5 text-[10px] tracking-[.06em] text-slate-400">Conversation OS for modern sales teams</div>
       </div>
@@ -97,7 +97,7 @@ export function WhatsAppConnect() {
             <p className="mt-7 max-w-[390px] text-[14px] leading-6 text-slate-400">Connect your WhatsApp Business account through Meta. Your existing number, catalog and customer history stay yours.</p>
             <div className="mt-9 space-y-4">
               {[
-                ["ShieldCheck", "Official Meta connection", "No passwords are shared with Connectly."],
+                ["ShieldCheck", "Official Meta connection", "No passwords are shared with Ai Botflow."],
                 ["MessageCircle", "Reply from your team inbox", "Keep the conversation moving, together."],
                 ["Clock3", "Ready in about 2 minutes", "We’ll send a test message before you finish."],
               ].map(([icon, title, detail]) => {
@@ -132,7 +132,7 @@ export function WhatsAppConnect() {
                 <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-slate-400"><LockKeyhole size={12} /> You’ll be redirected to Meta for secure authorization</div>
               </div>
             ) : (
-              <div className="mt-5 rounded-xl border border-[#ccebd5] bg-[#effaf2] p-3.5"><div className="flex items-center gap-2 text-[12px] font-bold text-[#176b35]"><CheckCircle2 size={16} /> WhatsApp Business account connected</div><div className="mt-1 pl-6 text-[11px] text-[#558163]">Connectly Demo Business · +91 98765 43210</div></div>
+              <div className="mt-5 rounded-xl border border-[#ccebd5] bg-[#effaf2] p-3.5"><div className="flex items-center gap-2 text-[12px] font-bold text-[#176b35]"><CheckCircle2 size={16} /> WhatsApp Business account connected</div><div className="mt-1 pl-6 text-[11px] text-[#558163]">Ai Botflow Demo Business · +91 98765 43210</div></div>
             )}
 
             {connected && <div className="mt-7 border-t border-slate-100 pt-6">

@@ -84,7 +84,7 @@ export function Reports() {
     const csv = "Campaign,Sent,Delivered,Read,Replied,Opt-outs,Conversions,Revenue\n" + campaigns.map((row) => row.join(",")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    link.download = "connectly-campaign-report.csv";
+    link.download = "ai-botflow-campaign-report.csv";
     link.click();
     URL.revokeObjectURL(link.href);
     setExported(true);

@@ -209,7 +209,7 @@ export default function FacebookInstagramSetup() {
               <div className="max-w-3xl space-y-6">
                 <div>
                   <h1 className="text-[20px] font-bold text-slate-900">Facebook & Instagram Channels</h1>
-                  <p className="mt-1 text-[13px] text-slate-500">Connect your Meta accounts to receive messages, comments, and leads directly inside Connectly CRM.</p>
+                  <p className="mt-1 text-[13px] text-slate-500">Connect your Meta accounts to receive messages, comments, and leads directly inside Ai Botflow.</p>
                 </div>
 
                 {/* Channel status cards */}
@@ -234,13 +234,13 @@ export default function FacebookInstagramSetup() {
 
                 {/* What you can do */}
                 <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-4 text-[13px] font-bold text-slate-800">What Connectly handles for you</h3>
+                  <h3 className="mb-4 text-[13px] font-bold text-slate-800">What Ai Botflow handles for you</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       [MessageSquare, "Unified Inbox", "All FB + IG messages in one place alongside WhatsApp"],
                       [Zap, "AI Auto-reply", "AI responds to DMs instantly using your trained knowledge base"],
                       [Users, "Lead Capture", "Facebook Lead Ads auto-create contacts in your pipeline"],
-                      [Bell, "Comment Replies", "Reply to post comments directly from Connectly"],
+                      [Bell, "Comment Replies", "Reply to post comments directly from Ai Botflow"],
                       [Phone, "Contact Sync", "Customers from FB/IG auto-synced into your Contacts"],
                       [Image, "Story Mentions", "Get notified when customers mention you in stories"],
                     ].map(([Icon, title, desc]) => (

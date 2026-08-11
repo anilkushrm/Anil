@@ -63,9 +63,9 @@ const PHASES: Phase[] = [
       {
         id: 5, title: "New user banao (root mat use karo)", duration: "3 min",
         commands: [
-          "adduser connectly",
-          "usermod -aG sudo connectly",
-          "su - connectly",
+          "adduser ai-botflow",
+          "usermod -aG sudo ai-botflow",
+          "su - ai-botflow",
         ],
         warning: "Production mein kabhi root user se app mat chalao. Security risk hai.",
       },
@@ -120,7 +120,7 @@ const PHASES: Phase[] = [
         commands: [
           "mongosh",
           "use admin",
-          'db.createUser({ user: "connectlyadmin", pwd: "YOUR_STRONG_PASSWORD", roles: ["root"] })',
+          'db.createUser({ user: "ai-botflowadmin", pwd: "YOUR_STRONG_PASSWORD", roles: ["root"] })',
           "exit",
         ],
         warning: "Password strong rakhna — uppercase + lowercase + numbers + symbols. Example: C0nn3ctly@2025!",
@@ -138,8 +138,8 @@ const PHASES: Phase[] = [
       {
         id: 4, title: "Database create karo", duration: "2 min",
         commands: [
-          'mongosh "mongodb://connectlyadmin:YOUR_PASSWORD@localhost:27017/admin"',
-          "use connectlycrm",
+          'mongosh "mongodb://ai-botflowadmin:YOUR_PASSWORD@localhost:27017/admin"',
+          "use ai-botflowcrm",
           'db.createCollection("tenants")',
           "exit",
         ],
@@ -177,9 +177,9 @@ const PHASES: Phase[] = [
         id: 1, title: "GitHub se code clone karo", duration: "2 min",
         commands: [
           "cd /var/www",
-          "sudo mkdir connectlycrm && sudo chown connectly:connectly connectlycrm",
-          "cd connectlycrm",
-          "git clone https://github.com/YOUR_USERNAME/connectlycrm.git .",
+          "sudo mkdir ai-botflowcrm && sudo chown ai-botflow:ai-botflow ai-botflowcrm",
+          "cd ai-botflowcrm",
+          "git clone https://github.com/YOUR_USERNAME/ai-botflowcrm.git .",
         ],
         tip: "Agar private repo hai toh GitHub Personal Access Token use karo.",
       },
@@ -196,7 +196,7 @@ const PHASES: Phase[] = [
           "",
           "# Yeh variables set karo:",
           "NODE_ENV=production",
-          "MONGODB_URI=mongodb://connectlyadmin:PASSWORD@localhost:27017/connectlycrm",
+          "MONGODB_URI=mongodb://ai-botflowadmin:PASSWORD@localhost:27017/ai-botflowcrm",
           "REDIS_URL=redis://:REDIS_PASSWORD@localhost:6379",
           "NEXTAUTH_SECRET=your-super-secret-32-char-key",
           "NEXTAUTH_URL=https://yourdomain.com",
@@ -217,11 +217,11 @@ const PHASES: Phase[] = [
       {
         id: 5, title: "PM2 se app start karo", duration: "2 min",
         commands: [
-          'pm2 start "pnpm start" --name "connectlycrm" --env production',
+          'pm2 start "pnpm start" --name "ai-botflowcrm" --env production',
           "pm2 save",
           "pm2 startup   # auto-start on VPS reboot",
           "pm2 status    # running dikhna chahiye",
-          "pm2 logs connectlycrm   # logs dekhne ke liye",
+          "pm2 logs ai-botflowcrm   # logs dekhne ke liye",
         ],
       },
     ],
@@ -241,7 +241,7 @@ const PHASES: Phase[] = [
       {
         id: 2, title: "Nginx config banao", duration: "5 min",
         commands: [
-          "sudo nano /etc/nginx/sites-available/connectlycrm",
+          "sudo nano /etc/nginx/sites-available/ai-botflowcrm",
           "",
           "server {",
           "  listen 80;",
@@ -257,7 +257,7 @@ const PHASES: Phase[] = [
           "  }",
           "}",
           "",
-          "sudo ln -s /etc/nginx/sites-available/connectlycrm /etc/nginx/sites-enabled/",
+          "sudo ln -s /etc/nginx/sites-available/ai-botflowcrm /etc/nginx/sites-enabled/",
           "sudo nginx -t   # config test",
           "sudo systemctl reload nginx",
         ],
@@ -432,7 +432,7 @@ export default function DeploymentGuide() {
               <Zap size={18} fill="currentColor" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-slate-800">Connectly CRM — Deployment Guide</div>
+              <div className="text-[13px] font-bold text-slate-800">Ai Botflow — Deployment Guide</div>
               <div className="text-[10px] text-slate-400">Hostinger KVM 2 · Ubuntu 22.04 · Next.js + MongoDB</div>
             </div>
           </div>
@@ -566,11 +566,11 @@ export default function DeploymentGuide() {
               <h3 className="mb-3 text-[13px] font-bold text-slate-800">🔧 Useful Commands</h3>
               <div className="space-y-2">
                 {[
-                  ["App restart", "pm2 restart connectlycrm"],
-                  ["App logs", "pm2 logs connectlycrm"],
+                  ["App restart", "pm2 restart ai-botflowcrm"],
+                  ["App logs", "pm2 logs ai-botflowcrm"],
                   ["App status", "pm2 status"],
                   ["Nginx restart", "sudo systemctl restart nginx"],
-                  ["MongoDB shell", "mongosh -u connectlyadmin -p"],
+                  ["MongoDB shell", "mongosh -u ai-botflowadmin -p"],
                   ["Disk space", "df -h"],
                   ["RAM usage", "free -m"],
                 ].map(([label, cmd]) => (
@@ -588,7 +588,7 @@ export default function DeploymentGuide() {
         <div className="mt-8 rounded-2xl bg-[#0f172a] p-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Zap size={16} className="text-[#22c55e]" fill="currentColor" />
-            <span className="text-[14px] font-bold text-white">Connectly CRM — Live on Hostinger!</span>
+            <span className="text-[14px] font-bold text-white">Ai Botflow — Live on Hostinger!</span>
           </div>
           <p className="text-[12px] text-slate-400">Sab steps complete hone ke baad <span className="text-[#65e58c] font-semibold">https://yourdomain.com</span> pe app accessible hoga.</p>
           <div className="mt-4 flex justify-center gap-3">

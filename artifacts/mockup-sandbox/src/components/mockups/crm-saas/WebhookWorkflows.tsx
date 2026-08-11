@@ -53,11 +53,11 @@ interface EventLog {
 // ─── Data ──────────────────────────────────────────────────────────────────
 
 const ENDPOINTS: Endpoint[] = [
-  { id: "e1", name: "Lead Form – Website", source: "Website", url: "https://hook.connectlycrm.app/wh/acme/lead-form", status: "active", events: 847, lastTriggered: "2 min ago", secret: "whsec_acme_lf_2025" },
-  { id: "e2", name: "Shopify Orders", source: "Shopify", url: "https://hook.connectlycrm.app/wh/acme/shopify", status: "active", events: 1204, lastTriggered: "14 min ago", secret: "whsec_acme_sh_2025" },
-  { id: "e3", name: "Facebook Lead Ads", source: "Meta", url: "https://hook.connectlycrm.app/wh/acme/fb-leads", status: "active", events: 391, lastTriggered: "1 hr ago", secret: "whsec_acme_fb_2025" },
-  { id: "e4", name: "Custom CRM Sync", source: "Internal", url: "https://hook.connectlycrm.app/wh/acme/crm-sync", status: "error", events: 34, lastTriggered: "3 days ago", secret: "whsec_acme_cs_2025" },
-  { id: "e5", name: "Typeform Responses", source: "Typeform", url: "https://hook.connectlycrm.app/wh/acme/typeform", status: "inactive", events: 0, lastTriggered: "Never", secret: "whsec_acme_tf_2025" },
+  { id: "e1", name: "Lead Form – Website", source: "Website", url: "https://hook.ai-botflowcrm.app/wh/acme/lead-form", status: "active", events: 847, lastTriggered: "2 min ago", secret: "whsec_acme_lf_2025" },
+  { id: "e2", name: "Shopify Orders", source: "Shopify", url: "https://hook.ai-botflowcrm.app/wh/acme/shopify", status: "active", events: 1204, lastTriggered: "14 min ago", secret: "whsec_acme_sh_2025" },
+  { id: "e3", name: "Facebook Lead Ads", source: "Meta", url: "https://hook.ai-botflowcrm.app/wh/acme/fb-leads", status: "active", events: 391, lastTriggered: "1 hr ago", secret: "whsec_acme_fb_2025" },
+  { id: "e4", name: "Custom CRM Sync", source: "Internal", url: "https://hook.ai-botflowcrm.app/wh/acme/crm-sync", status: "error", events: 34, lastTriggered: "3 days ago", secret: "whsec_acme_cs_2025" },
+  { id: "e5", name: "Typeform Responses", source: "Typeform", url: "https://hook.ai-botflowcrm.app/wh/acme/typeform", status: "inactive", events: 0, lastTriggered: "Never", secret: "whsec_acme_tf_2025" },
 ];
 
 const WORKFLOWS: Workflow[] = [

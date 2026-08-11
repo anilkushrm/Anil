@@ -12,7 +12,7 @@ export function Sidebar({ active = "Dashboard" }: { active?: string }) {
   return <aside className={`${collapsed ? "w-[76px]" : "w-[238px]"} shrink-0 bg-[#101a2e] text-slate-300 flex min-h-screen flex-col transition-all duration-200`}>
     <div className="h-[72px] border-b border-white/8 flex items-center px-5 gap-3">
       <div className="h-9 w-9 rounded-xl bg-[#22c55e] text-[#092314] flex items-center justify-center shadow-lg shadow-green-500/15"><Zap size={19} fill="currentColor" /></div>
-      {!collapsed && <div><div className="font-display font-bold text-white tracking-tight">Connectly<span className="text-[#65e58c]"> CRM</span></div><div className="text-[10px] text-slate-500 tracking-[.12em] uppercase mt-0.5">Conversation OS</div></div>}
+      {!collapsed && <div><div className="font-display font-bold text-white tracking-tight">Ai Botflow<span className="text-[#65e58c]"> CRM</span></div><div className="text-[10px] text-slate-500 tracking-[.12em] uppercase mt-0.5">Conversation OS</div></div>}
     </div>
     <div className="px-3 pt-5 flex-1">
       {!collapsed && <div className="text-[10px] uppercase tracking-[.16em] text-slate-600 font-bold px-3 mb-3">Workspace</div>}
@@ -23,7 +23,7 @@ export function Sidebar({ active = "Dashboard" }: { active?: string }) {
       </nav>
     </div>
     <div className="p-3">
-      {!collapsed && <div className="rounded-xl bg-[#17253d] border border-white/5 p-3 mb-3"><div className="flex items-center gap-2"><div className="h-8 w-8 rounded-full bg-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center">AC</div><div className="min-w-0"><div className="text-xs font-semibold text-white">Acme Corp</div><div className="text-[10px] text-slate-500 truncate">acme.connectly.app</div></div><ChevronDown size={14} className="ml-auto text-slate-500" /></div><div className="mt-3 flex justify-between items-center"><span className="text-[10px] text-slate-500">Business plan</span><span className="text-[10px] font-semibold text-[#65e58c]">Active</span></div></div>}
+      {!collapsed && <div className="rounded-xl bg-[#17253d] border border-white/5 p-3 mb-3"><div className="flex items-center gap-2"><div className="h-8 w-8 rounded-full bg-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center">AC</div><div className="min-w-0"><div className="text-xs font-semibold text-white">Acme Corp</div><div className="text-[10px] text-slate-500 truncate">acme.ai-botflow.app</div></div><ChevronDown size={14} className="ml-auto text-slate-500" /></div><div className="mt-3 flex justify-between items-center"><span className="text-[10px] text-slate-500">Business plan</span><span className="text-[10px] font-semibold text-[#65e58c]">Active</span></div></div>}
       <button onClick={() => setCollapsed(!collapsed)} className="w-full text-left text-xs text-slate-500 hover:text-white px-3 py-2">{collapsed ? "→" : "← Collapse sidebar"}</button>
     </div>
   </aside>;

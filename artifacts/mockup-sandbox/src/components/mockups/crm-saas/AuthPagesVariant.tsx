@@ -29,7 +29,7 @@ function Logo() {
         <Zap size={18} fill="currentColor" strokeWidth={2.5} />
       </div>
       <div className="font-semibold tracking-[-.04em] text-[#f0fdf4]">
-        Connectly <span className="text-[#22c55e]">CRM</span>
+        Ai Botflow <span className="text-[#22c55e]">CRM</span>
       </div>
     </div>
   );
@@ -51,7 +51,7 @@ function Rail() {
             Start with the<br /><span className="text-[#22c55e]">conversation.</span>
           </h1>
           <p className="mt-6 max-w-[340px] text-[14px] leading-6 text-[#cfc6d7]">
-            Your team is already talking to customers. Connectly gives those conversations a place to go next.
+            Your team is already talking to customers. Ai Botflow gives those conversations a place to go next.
           </p>
           <div className="mt-10 space-y-4">
             {benefits.map((benefit, index) => (
@@ -106,7 +106,7 @@ function SignupFields({ step, setStep }: { step: SignupStep; setStep: (step: Sig
         <Input label="Last name" icon={Users} placeholder="Patel" value={company} onChange={setCompany} />
       </div>
       <button onClick={() => setStep(2)} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#16a34a] text-[13px] font-bold text-[#ffffff] transition hover:bg-[#15803d]">Create my workspace <ArrowRight size={16} /></button>
-      <p className="text-center text-[11px] leading-5 text-[#948b93]">By continuing, you agree to Connectly&apos;s terms and privacy policy.</p>
+      <p className="text-center text-[11px] leading-5 text-[#948b93]">By continuing, you agree to Ai Botflow&apos;s terms and privacy policy.</p>
     </div>
   );
   if (step === 2) return (
@@ -142,7 +142,7 @@ export function AuthPagesVariant() {
     <main className="flex min-h-[100dvh] w-full bg-[#f8fafc] font-sans">
       <Rail />
       <section className="flex min-w-0 flex-1 flex-col px-5 py-6 sm:px-10 lg:px-16 xl:px-24">
-        <div className="flex items-center justify-between lg:hidden"><Logo /><span className="text-[11px] font-bold uppercase tracking-[.12em] text-[#978c96]">Connectly CRM</span></div>
+        <div className="flex items-center justify-between lg:hidden"><Logo /><span className="text-[11px] font-bold uppercase tracking-[.12em] text-[#978c96]">Ai Botflow</span></div>
         <div className="mx-auto flex w-full max-w-[470px] flex-1 flex-col justify-center py-10">
           <div className="mb-9 flex rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-1">
             <button onClick={() => { setMode("login"); setNotice(""); }} className={`h-10 flex-1 rounded-lg text-[12px] font-bold transition ${mode === "login" ? "bg-[#0f172a] text-[#f0fdf4] shadow-sm" : "text-[#827682]"}`}>Sign in</button>
@@ -159,11 +159,11 @@ export function AuthPagesVariant() {
               <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.12em] text-[#a89da5]"><span className="h-px flex-1 bg-[#ded5da]" />or use email<span className="h-px flex-1 bg-[#ded5da]" /></div>
               <Input label="Work email" icon={Mail} type="email" placeholder="you@company.com" value={email} onChange={setEmail} />
               <label className="block"><div className="mb-2 flex items-center justify-between"><span className="text-[11px] font-bold uppercase tracking-[.1em] text-[#756b79]">Password</span><button type="button" onClick={() => setNotice("Password reset link requested.")} className="text-[11px] font-bold text-[#16a34a]">Forgot password?</button></div><span className="relative block"><LockKeyhole size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#a49aa7]" /><input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" required className="h-12 w-full rounded-xl border border-[#ded5da] bg-[#ffffff] pl-11 pr-11 text-[13px] outline-none focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9c929b]">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
-              <button type="submit" className="h-12 w-full rounded-xl bg-[#16a34a] text-[13px] font-bold text-[#ffffff] transition hover:bg-[#15803d]">Sign in to Connectly <ArrowRight className="ml-1 inline" size={15} /></button>
+              <button type="submit" className="h-12 w-full rounded-xl bg-[#16a34a] text-[13px] font-bold text-[#ffffff] transition hover:bg-[#15803d]">Sign in to Ai Botflow <ArrowRight className="ml-1 inline" size={15} /></button>
             </form>
           ) : <SignupFields step={step} setStep={setStep} />}
           {notice && <div className="mt-5 rounded-xl border border-[#d8e6d6] bg-[#edf7eb] px-4 py-3 text-[12px] font-semibold text-[#3e7044]">{notice}</div>}
-          <p className="mt-9 text-center text-[12px] text-[#948b93]">{mode === "login" ? "New to Connectly?" : "Already have an account?"} <button onClick={() => setMode(mode === "login" ? "signup" : "login")} className="font-bold text-[#16a34a] hover:underline">{mode === "login" ? "Start a free workspace" : "Sign in instead"}</button></p>
+          <p className="mt-9 text-center text-[12px] text-[#948b93]">{mode === "login" ? "New to Ai Botflow?" : "Already have an account?"} <button onClick={() => setMode(mode === "login" ? "signup" : "login")} className="font-bold text-[#16a34a] hover:underline">{mode === "login" ? "Start a free workspace" : "Sign in instead"}</button></p>
         </div>
         <div className="mx-auto flex w-full max-w-[470px] items-center justify-between border-t border-[#e3d9d4] pt-4 text-[10px] font-semibold uppercase tracking-[.1em] text-[#a398a0]"><span>Private by default</span><span className="flex items-center gap-1"><LockKeyhole size={11} /> SOC2-ready infrastructure</span></div>
       </section>

@@ -30,7 +30,7 @@ function Brand() {
       </div>
       <div>
         <div className="font-display text-[17px] font-bold tracking-[-.03em] text-white">
-          Connectly <span className="text-[#8cf2a7]">CRM</span>
+          Ai Botflow <span className="text-[#8cf2a7]">CRM</span>
         </div>
         <div className="mt-0.5 text-[10px] tracking-[.06em] text-slate-400">
           Conversation OS for modern sales teams
@@ -148,7 +148,7 @@ function SignupPanel() {
     <section className="relative flex min-h-[720px] flex-1 flex-col overflow-auto bg-[#f6f8f7] px-8 py-9 text-[#152238]">
       <div className="mx-auto w-full max-w-[760px]">
         <div className="mb-10 flex items-center justify-between">
-          <div className="font-display text-[15px] font-bold tracking-[-.03em] text-[#152238]">Connectly <span className="text-[#159447]">CRM</span></div>
+          <div className="font-display text-[15px] font-bold tracking-[-.03em] text-[#152238]">Ai Botflow <span className="text-[#159447]">CRM</span></div>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.08em] text-slate-400"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#d8f7df] text-[#159447]"><Check size={13} /></span> Account <span className="mx-1 h-px w-6 bg-slate-300" /><span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#22c55e] text-[#062112]">2</span> <span className="text-slate-700">Company Setup</span> <span className="mx-1 h-px w-6 bg-slate-300" /><span>3&nbsp; Connect WhatsApp</span></div>
         </div>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,480px)_220px] lg:items-start lg:justify-center">

@@ -494,7 +494,7 @@ export default function MobileApp() {
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
             <div className="h-7 w-7 flex items-center justify-center rounded-lg bg-[#22c55e]"><Zap size={14} fill="white" className="text-white" /></div>
-            <span className="text-[16px] font-bold text-white">Connectly CRM</span>
+            <span className="text-[16px] font-bold text-white">Ai Botflow</span>
             <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-400">Mobile</span>
           </div>
           <p className="text-[11px] text-slate-500">Tap pills to switch screens</p>
