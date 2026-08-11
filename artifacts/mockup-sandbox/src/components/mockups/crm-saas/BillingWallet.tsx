@@ -29,8 +29,8 @@ const TXNS = [
 ];
 
 const USAGE = [
-  { label: "Marketing",   used: 616, color: "bg-orange-400", cost: "₹1.00/msg" },
-  { label: "Utility",     used: 215, color: "bg-blue-400",   cost: "₹0.20/msg" },
+  { label: "Marketing",   used: 616, color: "bg-orange-400", cost: "₹0.92/msg" },
+  { label: "Utility",     used: 215, color: "bg-blue-400",   cost: "₹0.12/msg" },
   { label: "IG Messages", used: 843, color: "bg-pink-400",   cost: "Free" },
   { label: "FB Messages", used: 321, color: "bg-blue-600",   cost: "Free" },
 ];
@@ -258,9 +258,9 @@ export default function BillingWallet() {
             <div className="text-[13px] font-extrabold text-slate-800 mb-3">WhatsApp Conversation Rates</div>
             <div className="grid grid-cols-4 gap-3">
               {[
-                { type: "Marketing",      rate: "₹1.00",  eg: "Offers, promos", color: "bg-orange-100 text-orange-700 border-orange-100" },
-                { type: "Utility",        rate: "₹0.20",  eg: "Order updates",  color: "bg-blue-100 text-blue-700 border-blue-100" },
-                { type: "Authentication", rate: "₹0.20",  eg: "OTP, login",     color: "bg-purple-100 text-purple-700 border-purple-100" },
+                { type: "Marketing",      rate: "₹0.92",  eg: "Offers, promos", color: "bg-orange-100 text-orange-700 border-orange-100" },
+                { type: "Utility",        rate: "₹0.12",  eg: "Order updates",  color: "bg-blue-100 text-blue-700 border-blue-100" },
+                { type: "Authentication", rate: "₹0.12",  eg: "OTP, login",     color: "bg-purple-100 text-purple-700 border-purple-100" },
                 { type: "Service (Incoming)", rate: "Free ✅", eg: "Customer replies", color: "bg-green-100 text-green-700 border-green-100" },
               ].map(r => (
                 <div key={r.type} className={`rounded-xl border ${r.color} p-3`}>

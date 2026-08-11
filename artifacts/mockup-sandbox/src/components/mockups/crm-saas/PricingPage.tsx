@@ -89,7 +89,7 @@ const PLANS = [
 const FAQS = [
   {
     q: "WhatsApp messages ka charge alag hoga kya?",
-    a: "Haan — WhatsApp Business API ke conversation charges Meta ke hisaab se alag hote hain. Aapko Ai Botflow ke panel mein wallet topup karna hoga (₹500 / ₹1000 / ₹2000). Har message automatically wallet se deduct hoga. Marketing message ~₹1/conv, utility ~₹0.20/conv.",
+    a: "Haan — WhatsApp Business API ke conversation charges Meta ke hisaab se alag hote hain. Aapko Ai Botflow ke panel mein wallet topup karna hoga (₹500 / ₹1000 / ₹2000). Har message automatically wallet se deduct hoga. Marketing message ₹0.92/conv, utility/auth ₹0.12/conv.",
   },
   {
     q: "Instagram aur Facebook ka charge kya hoga?",
@@ -341,8 +341,8 @@ function WalletSection() {
             ))}
           </div>
           <div className="rounded-xl bg-white/5 px-4 py-3 flex flex-wrap gap-4 justify-center text-[11px] text-slate-400">
-            <span>✅ Marketing msg ~₹1.00</span>
-            <span>✅ Utility msg ~₹0.20</span>
+            <span>✅ Marketing msg ₹0.92</span>
+            <span>✅ Utility / Auth msg ₹0.12</span>
             <span>✅ Customer reply (incoming) Free</span>
             <span>✅ IG + FB unlimited — Free</span>
           </div>
