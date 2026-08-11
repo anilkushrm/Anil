@@ -11,6 +11,7 @@ export const modules: ModuleMap = {
   "./components/mockups/crm-saas/DocumentTraining.tsx": () => import("../components/mockups/crm-saas/DocumentTraining.tsx"),
   "./components/mockups/crm-saas/FacebookInstagramSetup.tsx": () => import("../components/mockups/crm-saas/FacebookInstagramSetup.tsx"),
   "./components/mockups/crm-saas/LeadsPipeline.tsx": () => import("../components/mockups/crm-saas/LeadsPipeline.tsx"),
+  "./components/mockups/crm-saas/MobileApp.tsx": () => import("../components/mockups/crm-saas/MobileApp.tsx"),
   "./components/mockups/crm-saas/Reports.tsx": () => import("../components/mockups/crm-saas/Reports.tsx"),
   "./components/mockups/crm-saas/Settings.tsx": () => import("../components/mockups/crm-saas/Settings.tsx"),
   "./components/mockups/crm-saas/UnifiedInbox.tsx": () => import("../components/mockups/crm-saas/UnifiedInbox.tsx"),
