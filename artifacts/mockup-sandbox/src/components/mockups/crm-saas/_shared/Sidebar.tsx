@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Activity, BarChart3, BellRing, Bot, ChevronDown, Contact, FileText, Inbox, LayoutDashboard, Megaphone, Settings, Sparkles, UsersRound, Zap } from "lucide-react";
+import { Activity, BarChart3, BellRing, Bot, ChevronDown, Contact, CreditCard, FileText, Inbox, LayoutDashboard, Megaphone, Settings, Sparkles, UsersRound, Zap } from "lucide-react";
 
 const items = [
   ["Dashboard", LayoutDashboard], ["Inbox", Inbox], ["Contacts", Contact], ["Leads Pipeline", BarChart3],
   ["Campaigns", Megaphone], ["WhatsApp Templates", FileText], ["Chatbot Flows", Bot], ["AI & Sequences", Sparkles], ["Broadcasts", BellRing],
-  ["Reports", Activity], ["Settings", Settings],
+  ["Reports", Activity], ["Billing", CreditCard], ["Settings", Settings],
 ] as const;
 
 export function Sidebar({ active = "Dashboard" }: { active?: string }) {
