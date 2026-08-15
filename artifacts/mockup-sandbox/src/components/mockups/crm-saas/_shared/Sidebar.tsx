@@ -112,7 +112,7 @@ export function Sidebar({ active = "dashboard" }: { active?: string }) {
         </div>
         {!collapsed && (
           <div>
-            <div className="text-[13px] font-extrabold text-white tracking-tight leading-tight">AI BOT FLOW</div>
+            <div className="text-[13px] font-extrabold text-white tracking-tight leading-tight">Ai Botflow <span className="text-[#4ade80]">CRM</span></div>
             <div className="text-[9px] font-bold text-slate-500 tracking-[.1em] uppercase">Communication OS</div>
           </div>
         )}
