@@ -1,183 +1,285 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Eye,
-  Globe2,
-  LockKeyhole,
-  Mail,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-  Star,
-  Users,
-  Zap,
+  Building2, Check, Eye, EyeOff, LockKeyhole, Mail, Phone,
+  Sparkles, Star, User, Zap,
 } from "lucide-react";
 
 const features = [
-  "AI-powered replies across WhatsApp, Instagram & Facebook",
-  "Lead pipeline that updates itself",
-  "Sequence messages up to 1 year",
+  { text: "WhatsApp, Instagram & Facebook — ek inbox mein" },
+  { text: "AI chatbot jo khud leads qualify karta hai" },
+  { text: "Sequence messages — 1 saal tak auto-follow-up" },
 ];
 
 function Brand() {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8cf2a7] text-[#0f172a] shadow-[0_8px_24px_rgba(140,242,167,.18)]">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8cf2a7] text-[#0f172a] shadow-[0_8px_24px_rgba(140,242,167,.25)]">
         <Zap size={21} fill="currentColor" strokeWidth={2.5} />
       </div>
       <div>
-        <div className="font-display text-[17px] font-bold tracking-[-.03em] text-white">
+        <div className="text-[17px] font-bold tracking-tight text-white">
           Ai Botflow <span className="text-[#8cf2a7]">CRM</span>
         </div>
-        <div className="mt-0.5 text-[10px] tracking-[.06em] text-slate-400">
-          Conversation OS for modern sales teams
-        </div>
+        <div className="text-[10px] tracking-widest text-slate-400 uppercase">Communication OS</div>
       </div>
     </div>
   );
 }
 
-function Field({ label, icon: Icon, children }: { label: string; icon: typeof Mail; children: ReactNode }) {
+/* ─── Left panel (dark brand side) ─── */
+function LeftPanel() {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.08em] text-slate-500">{label}</span>
+    <div className="relative hidden lg:flex flex-col w-[420px] shrink-0 bg-[#0d1929] px-10 py-10 overflow-hidden">
+      {/* dot grid */}
+      <div className="pointer-events-none absolute inset-0 opacity-[.12]"
+        style={{ backgroundImage: "radial-gradient(#7fa5c8 1px,transparent 1px)", backgroundSize: "22px 22px" }} />
+      {/* glow */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-[#22c55e]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-[#3b82f6]/10 blur-3xl" />
+
       <div className="relative">
-        <Icon size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        {children}
-      </div>
-    </label>
-  );
-}
-
-function MiniPreview() {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-[0_14px_35px_rgba(15,23,42,.08)]">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="h-2.5 w-20 rounded-full bg-[#18263d]" />
-        <div className="h-5 w-5 rounded-full bg-[#d4f8dd]" />
-      </div>
-      <div className="grid grid-cols-[62px_1fr] gap-2">
-        <div className="space-y-1.5 rounded-md bg-[#101a2e] p-2">
-          {[1, 2, 3, 4, 5].map((item) => <div key={item} className={`h-1.5 rounded-full ${item === 2 ? "bg-[#7ce99d]" : "bg-slate-600"}`} />)}
-        </div>
-        <div className="space-y-2">
-          <div className="grid grid-cols-3 gap-1.5">
-            <div className="h-11 rounded-md bg-[#e7f9ed]" />
-            <div className="h-11 rounded-md bg-[#fff0e7]" />
-            <div className="h-11 rounded-md bg-[#e9f1ff]" />
-          </div>
-          <div className="h-16 rounded-md bg-[#f3f6f8]">
-            <div className="flex items-end gap-1 px-2 pt-5">
-              {[34, 47, 26, 55, 42, 66, 51, 73].map((height, i) => <div key={i} style={{ height }} className={`w-2 rounded-t-sm ${i > 4 ? "bg-[#55d77e]" : "bg-[#b7eac4]"}`} />)}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LoginPanel() {
-  return (
-    <section className="relative flex min-h-[720px] flex-1 overflow-hidden bg-[#0f172a] px-8 py-10 text-white lg:px-[clamp(32px,5vw,78px)]">
-      <div className="pointer-events-none absolute inset-0 opacity-[.18]" style={{ backgroundImage: "radial-gradient(#8fa0b9 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
-      <div className="relative mx-auto flex w-full max-w-[560px] flex-col">
         <Brand />
-        <div className="my-auto py-16">
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#8cf2a7]/20 bg-[#8cf2a7]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.13em] text-[#a9f5ba]">
-            <Sparkles size={13} /> Built for conversations that convert
+      </div>
+
+      {/* headline */}
+      <div className="relative mt-auto mb-auto pt-12">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#8cf2a7]/20 bg-[#8cf2a7]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#a9f5ba] mb-6">
+          <Sparkles size={11} /> Conversations that convert
+        </div>
+        <h2 className="text-[clamp(28px,3.2vw,42px)] font-bold leading-[1.08] tracking-tight text-white">
+          Har conversation ka<br />
+          <span className="text-[#8cf2a7]">ek clear next step.</span>
+        </h2>
+        <div className="mt-8 space-y-4">
+          {features.map((f) => (
+            <div key={f.text} className="flex items-start gap-3 text-[13px] leading-6 text-slate-300">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8cf2a7]/15 text-[#8cf2a7]">
+                <Check size={12} strokeWidth={3} />
+              </span>
+              {f.text}
+            </div>
+          ))}
+        </div>
+
+        {/* mini dashboard preview */}
+        <div className="mt-10 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex gap-1.5">
+              {["bg-red-400","bg-yellow-400","bg-green-400"].map(c=>(
+                <div key={c} className={`h-2 w-2 rounded-full ${c}`} />
+              ))}
+            </div>
+            <div className="text-[10px] text-slate-400">Live Dashboard</div>
           </div>
-          <h1 className="max-w-[470px] font-display text-[clamp(34px,4vw,54px)] font-bold leading-[1.03] tracking-[-.055em] text-white">
-            Every conversation.<br /><span className="text-[#8cf2a7]">One clear next step.</span>
-          </h1>
-          <div className="mt-10 space-y-5">
-            {features.map((feature) => (
-              <div key={feature} className="flex items-start gap-3 text-[14px] leading-6 text-slate-300">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8cf2a7]/15 text-[#8cf2a7]"><Check size={13} strokeWidth={3} /></span>
-                {feature}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {[["2,847","Leads","bg-emerald-500/10 border-emerald-500/20 text-emerald-300"],
+              ["48k","Messages","bg-blue-500/10 border-blue-500/20 text-blue-300"],
+              ["₹24L","Revenue","bg-purple-500/10 border-purple-500/20 text-purple-300"]].map(([v,l,cls])=>(
+              <div key={l} className={`rounded-lg border p-2 ${cls}`}>
+                <div className="text-[15px] font-bold">{v}</div>
+                <div className="text-[9px] opacity-70">{l}</div>
               </div>
             ))}
           </div>
-        </div>
-        <div className="flex items-center justify-between border-t border-white/10 pt-5">
-          <div>
-            <div className="text-[11px] font-bold uppercase tracking-[.13em] text-slate-400">Trusted by 2,400+ businesses</div>
-            <div className="mt-2 flex items-center gap-1 text-[#f6bd65]">{[1, 2, 3, 4, 5].map((i) => <Star key={i} size={12} fill="currentColor" />)}<span className="ml-1 text-[11px] text-slate-400">4.9 / 5</span></div>
-          </div>
-          <div className="flex -space-x-2">
-            {["bg-[#f2c6ad] text-[#713b2a]", "bg-[#b9d6ee] text-[#244b71]", "bg-[#d7c1e8] text-[#593d6f]"].map((tone, i) => <div key={i} className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0f172a] text-[10px] font-bold ${tone}`}>{["RK", "AM", "SJ"][i]}</div>)}
+          <div className="h-14 rounded-md bg-white/5 flex items-end gap-1 px-2 pb-1">
+            {[35,52,28,68,45,72,58,80,62,74].map((h,i)=>(
+              <div key={i} style={{height:h*0.6}} className={`flex-1 rounded-sm ${i>6?"bg-[#55d77e]":"bg-[#55d77e]/30"}`} />
+            ))}
           </div>
         </div>
       </div>
-    </section>
+
+      {/* social proof */}
+      <div className="relative flex items-center justify-between border-t border-white/10 pt-6 mt-auto">
+        <div>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">2,400+ businesses trust us</div>
+          <div className="mt-1.5 flex items-center gap-1 text-[#f6bd65]">
+            {[1,2,3,4,5].map(i=><Star key={i} size={11} fill="currentColor" />)}
+            <span className="ml-1 text-[11px] text-slate-400">4.9 / 5</span>
+          </div>
+        </div>
+        <div className="flex -space-x-2">
+          {[["RK","bg-emerald-200 text-emerald-900"],["AM","bg-blue-200 text-blue-900"],["SJ","bg-purple-200 text-purple-900"]].map(([init,cls])=>(
+            <div key={init} className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0d1929] text-[10px] font-bold ${cls}`}>{init}</div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
-function LoginCard() {
-  const [showPassword, setShowPassword] = useState(false);
+/* ─── Login form ─── */
+function LoginForm({ onSwitch }: { onSwitch: () => void }) {
+  const [showPwd, setShowPwd] = useState(false);
   return (
-    <section className="flex min-h-[720px] flex-1 items-center justify-center bg-[#f6f8f7] px-6 py-10">
-      <div className="w-full max-w-[420px] rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,.08)]">
-        <div className="mb-8">
-          <h2 className="font-display text-[27px] font-bold tracking-[-.04em] text-[#152238]">Welcome back</h2>
-          <p className="mt-1 text-[13px] text-slate-500">Sign in to your workspace</p>
-        </div>
-        <button onClick={() => {}} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white text-[13px] font-bold text-slate-700 transition hover:bg-slate-50">
-          <span className="font-display text-[18px] font-bold text-[#4285f4]">G</span> Continue with Google
+    <div className="w-full">
+      <h2 className="text-[24px] font-bold tracking-tight text-slate-900">Welcome back 👋</h2>
+      <p className="mt-1 text-[13px] text-slate-500">Apne workspace mein sign in karein</p>
+
+      {/* Google */}
+      <button className="mt-6 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Google se continue karein
+      </button>
+
+      <div className="my-5 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+        <span className="h-px flex-1 bg-slate-100" />or<span className="h-px flex-1 bg-slate-100" />
+      </div>
+
+      <form className="space-y-4">
+        <label className="block">
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">Email</span>
+          <div className="relative">
+            <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="email" placeholder="you@company.com" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+          </div>
+        </label>
+        <label className="block">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Password</span>
+            <button type="button" className="text-[12px] font-semibold text-[#22c55e] hover:underline">Bhool gaye?</button>
+          </div>
+          <div className="relative">
+            <LockKeyhole size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type={showPwd ? "text" : "password"} placeholder="••••••••" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-11 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+            <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+        </label>
+        <button type="submit" className="h-11 w-full rounded-xl bg-[#22c55e] text-[14px] font-bold text-white shadow-[0_4px_16px_rgba(34,197,94,.3)] hover:bg-[#16a34a] transition">
+          Sign In →
         </button>
-        <div className="my-7 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.1em] text-slate-400"><span className="h-px flex-1 bg-slate-200" />or sign in with email<span className="h-px flex-1 bg-slate-200" /></div>
-        <form onSubmit={(event) => { event.preventDefault(); }} className="space-y-4">
-          <Field label="Work email" icon={Mail}><input type="email" required placeholder="you@company.com" className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10" /></Field>
-          <Field label="Password" icon={LockKeyhole}><input type={showPassword ? "text" : "password"} required placeholder="Enter your password" className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-10 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10" /><button type="button" aria-label="Toggle password visibility" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><Eye size={16} /></button></Field>
-          <div className="flex justify-end"><button type="button" onClick={() => {}} className="text-[12px] font-bold text-[#159447] hover:underline">Forgot password?</button></div>
-          <button type="submit" onClick={() => {}} className="h-11 w-full rounded-lg bg-[#22c55e] text-[13px] font-bold text-[#072313] transition hover:bg-[#1caf4e]">{false ? "Signing in..." : "Sign In"}</button>
-        </form>
-        <p className="mt-7 text-center text-[12px] text-slate-500">Don&apos;t have an account? <button onClick={() => {}} className="font-bold text-[#159447] hover:underline">Start free trial <ArrowRight className="inline" size={13} /></button></p>
-      </div>
-    </section>
+      </form>
+
+      <p className="mt-6 text-center text-[13px] text-slate-500">
+        Account nahi hai?{" "}
+        <button onClick={onSwitch} className="font-bold text-[#22c55e] hover:underline">Free mein banayein</button>
+      </p>
+    </div>
   );
 }
 
-function SignupPanel() {
-  const [team, setTeam] = useState("6-20");
-  const [continued, setContinued] = useState(false);
+/* ─── Signup form ─── */
+function SignupForm({ onSwitch }: { onSwitch: () => void }) {
+  const [showPwd, setShowPwd] = useState(false);
   return (
-    <section className="relative flex min-h-[720px] flex-1 flex-col overflow-auto bg-[#f6f8f7] px-8 py-9 text-[#152238]">
-      <div className="mx-auto w-full max-w-[760px]">
-        <div className="mb-10 flex items-center justify-between">
-          <div className="font-display text-[15px] font-bold tracking-[-.03em] text-[#152238]">Ai Botflow <span className="text-[#159447]">CRM</span></div>
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.08em] text-slate-400"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#d8f7df] text-[#159447]"><Check size={13} /></span> Account <span className="mx-1 h-px w-6 bg-slate-300" /><span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#22c55e] text-[#062112]">2</span> <span className="text-slate-700">Company Setup</span> <span className="mx-1 h-px w-6 bg-slate-300" /><span>3&nbsp; Connect WhatsApp</span></div>
-        </div>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,480px)_220px] lg:items-start lg:justify-center">
-          <div>
-            <h2 className="font-display text-[28px] font-bold tracking-[-.05em]">Set up your workspace</h2>
-            <p className="mt-2 text-[13px] text-slate-500">Tell us about your company so we can personalize your CRM</p>
-            <div className="mt-7 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_12px_35px_rgba(15,23,42,.04)]">
-              <Field label="Company name" icon={Users}><input defaultValue="Acme Corporation" className="h-10 w-full rounded-lg border border-slate-200 pl-10 pr-3 text-[13px] outline-none focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10" /></Field>
-              <Field label="Industry" icon={Globe2}><div className="relative"><select defaultValue="E-commerce" className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-8 text-[13px] outline-none focus:border-[#22c55e]"><option>E-commerce</option><option>SaaS</option><option>Education</option><option>Healthcare</option></select><ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" /></div></Field>
-              <div><span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.08em] text-slate-500">Team size</span><div className="grid grid-cols-4 gap-2">{["1-5", "6-20", "21-100", "100+"].map((size) => <button key={size} type="button" onClick={() => setTeam(size)} className={`h-9 rounded-lg border text-[11px] font-bold transition ${team === size ? "border-[#22c55e] bg-[#e9faed] text-[#12843d]" : "border-slate-200 text-slate-500 hover:border-slate-300"}`}>{size}</button>)}</div></div>
-              <Field label="WhatsApp Business number" icon={MessageCircle}><input placeholder="+91 98765 43210" className="h-10 w-full rounded-lg border border-slate-200 pl-10 pr-3 text-[13px] outline-none placeholder:text-slate-400 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10" /></Field>
-              <Field label="Company website" icon={Globe2}><input placeholder="https://yourcompany.com" className="h-10 w-full rounded-lg border border-slate-200 pl-10 pr-3 text-[13px] outline-none placeholder:text-slate-400 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10" /></Field>
-              <div className="grid grid-cols-2 gap-3"><Field label="Timezone" icon={Globe2}><select defaultValue="Asia/Kolkata (IST)" className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-2 text-[11px] outline-none"><option>Asia/Kolkata (IST)</option><option>Europe/London (GMT)</option><option>America/New_York (EST)</option></select></Field><Field label="Primary language" icon={Globe2}><select defaultValue="English" className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-2 text-[11px] outline-none"><option>English</option><option>Hindi</option></select></Field></div>
-              <button onClick={() => setContinued(true)} className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#22c55e] text-[13px] font-bold text-[#072313] hover:bg-[#1caf4e]">{continued ? "Workspace details saved" : "Continue to WhatsApp Setup"} <ArrowRight size={16} /></button>
-              <button onClick={() => {}} className="flex w-full items-center justify-center gap-1 pt-1 text-[12px] font-bold text-slate-500 hover:text-slate-800"><ArrowLeft size={14} /> Back</button>
-            </div>
-          </div>
-          <div className="mt-12 rounded-2xl border border-[#dbe8df] bg-[#edf7f0] p-4">
-            <div className="mb-3 text-[11px] font-bold leading-4 text-[#315441]">Your workspace<br />will look like:</div>
-            <MiniPreview />
-            <div className="mt-3 flex items-center gap-1.5 text-[10px] leading-4 text-[#557261]"><ShieldCheck size={14} className="shrink-0 text-[#159447]" /> Private by default.<br />You control access.</div>
-          </div>
-        </div>
-        <div className="mt-8 text-center text-[11px] font-semibold text-slate-400">Step 2 of 3 <span className="mx-2 text-slate-300">·</span> ~2 minutes remaining</div>
+    <div className="w-full">
+      <h2 className="text-[24px] font-bold tracking-tight text-slate-900">Free account banayein 🚀</h2>
+      <p className="mt-1 text-[13px] text-slate-500">14-day free trial · Credit card nahi chahiye</p>
+
+      {/* Google */}
+      <button className="mt-6 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Google se continue karein
+      </button>
+
+      <div className="my-5 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+        <span className="h-px flex-1 bg-slate-100" />or<span className="h-px flex-1 bg-slate-100" />
       </div>
-    </section>
+
+      <form className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">First Name</span>
+            <div className="relative">
+              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" placeholder="Rahul" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+            </div>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">Last Name</span>
+            <div className="relative">
+              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" placeholder="Kumar" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+            </div>
+          </label>
+        </div>
+        <label className="block">
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">Business Name</span>
+          <div className="relative">
+            <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="text" placeholder="Acme Corp" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+          </div>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">Work Email</span>
+          <div className="relative">
+            <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="email" placeholder="you@company.com" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+          </div>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">Phone</span>
+          <div className="relative">
+            <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="tel" placeholder="+91 98765 43210" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+          </div>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-500">Password</span>
+          <div className="relative">
+            <LockKeyhole size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type={showPwd ? "text" : "password"} placeholder="Min 8 characters" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-11 text-[13px] text-slate-800 outline-none focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/10 transition placeholder:text-slate-400" />
+            <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+        </label>
+        <button type="submit" className="h-11 w-full rounded-xl bg-[#22c55e] text-[14px] font-bold text-white shadow-[0_4px_16px_rgba(34,197,94,.3)] hover:bg-[#16a34a] transition">
+          Free Account Banayein →
+        </button>
+        <p className="text-center text-[11px] text-slate-400">
+          Sign up karne se aap hamare{" "}
+          <span className="text-[#22c55e] cursor-pointer hover:underline">Terms</span> aur{" "}
+          <span className="text-[#22c55e] cursor-pointer hover:underline">Privacy Policy</span> se agree karte hain
+        </p>
+      </form>
+
+      <p className="mt-4 text-center text-[13px] text-slate-500">
+        Already account hai?{" "}
+        <button onClick={onSwitch} className="font-bold text-[#22c55e] hover:underline">Sign in karein</button>
+      </p>
+    </div>
   );
 }
 
+/* ─── Main export ─── */
 export function AuthPages() {
-  return <main className="flex min-h-[100dvh] w-full flex-col font-sans md:flex-row"><div className="flex min-w-0 flex-1 flex-col xl:flex-row"><LoginPanel /><LoginCard /></div><SignupPanel /></main>;
+  const [tab, setTab] = useState<"login" | "signup">("login");
+  return (
+    <div className="flex min-h-screen w-full bg-[#f6f8f7]">
+      <LeftPanel />
+
+      {/* Right panel */}
+      <div className="flex flex-1 items-center justify-center px-6 py-10">
+        <div className="w-full max-w-[440px]">
+          {/* Mobile brand */}
+          <div className="mb-8 flex justify-center lg:hidden">
+            <Brand />
+          </div>
+
+          {/* Tab switcher */}
+          <div className="mb-8 flex rounded-2xl bg-slate-100 p-1">
+            {(["login","signup"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`flex-1 rounded-xl py-2.5 text-[13px] font-bold transition ${tab === t ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                {t === "login" ? "Sign In" : "Sign Up"}
+              </button>
+            ))}
+          </div>
+
+          {/* Form */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,.07)]">
+            {tab === "login"
+              ? <LoginForm onSwitch={() => setTab("signup")} />
+              : <SignupForm onSwitch={() => setTab("login")} />}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
