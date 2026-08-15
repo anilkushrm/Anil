@@ -4,7 +4,7 @@ import {
   MessageSquare, Instagram, Globe, Workflow, Repeat2, SlidersHorizontal,
   Bot, BookOpen, Megaphone, FileText, Clock, Webhook, Code2, FormInput,
   Building2, GraduationCap, BarChart3, UserCog, Settings, ChevronDown,
-  ChevronRight, BellRing, Sparkles,
+  ChevronRight, BellRing, Sparkles, CreditCard,
 } from "lucide-react";
 
 // ─── Nav structure ─────────────────────────────────────────────────────────────
@@ -78,9 +78,10 @@ const NAV: NavGroup[] = [
       { label: "Academy", icon: GraduationCap, key: "academy" },
     ],
   },
-  { key: "analytics", single: true, icon: BarChart3, label: "Analytics" },
-  { key: "team",      single: true, icon: UserCog,   label: "Team" },
-  { key: "settings",  single: true, icon: Settings,  label: "Settings" },
+  { key: "analytics", single: true, icon: BarChart3,  label: "Analytics" },
+  { key: "team",      single: true, icon: UserCog,    label: "Team" },
+  { key: "billing",   single: true, icon: CreditCard, label: "Billing & Wallet" },
+  { key: "settings",  single: true, icon: Settings,   label: "Settings" },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
