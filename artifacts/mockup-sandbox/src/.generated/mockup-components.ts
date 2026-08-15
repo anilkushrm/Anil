@@ -3,14 +3,11 @@ type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/crm-saas/AISequence.tsx": () => import("../components/mockups/crm-saas/AISequence.tsx"),
   "./components/mockups/crm-saas/AuthPages.tsx": () => import("../components/mockups/crm-saas/AuthPages.tsx"),
-  "./components/mockups/crm-saas/AuthPagesVariant.tsx": () => import("../components/mockups/crm-saas/AuthPagesVariant.tsx"),
   "./components/mockups/crm-saas/BillingWallet.tsx": () => import("../components/mockups/crm-saas/BillingWallet.tsx"),
   "./components/mockups/crm-saas/Campaigns.tsx": () => import("../components/mockups/crm-saas/Campaigns.tsx"),
   "./components/mockups/crm-saas/ChatbotFlow.tsx": () => import("../components/mockups/crm-saas/ChatbotFlow.tsx"),
   "./components/mockups/crm-saas/Dashboard.tsx": () => import("../components/mockups/crm-saas/Dashboard.tsx"),
-  "./components/mockups/crm-saas/DeploymentGuide.tsx": () => import("../components/mockups/crm-saas/DeploymentGuide.tsx"),
   "./components/mockups/crm-saas/DocumentTraining.tsx": () => import("../components/mockups/crm-saas/DocumentTraining.tsx"),
-  "./components/mockups/crm-saas/FacebookInstagramSetup.tsx": () => import("../components/mockups/crm-saas/FacebookInstagramSetup.tsx"),
   "./components/mockups/crm-saas/LeadsPipeline.tsx": () => import("../components/mockups/crm-saas/LeadsPipeline.tsx"),
   "./components/mockups/crm-saas/MobileApp.tsx": () => import("../components/mockups/crm-saas/MobileApp.tsx"),
   "./components/mockups/crm-saas/OnboardingConnect.tsx": () => import("../components/mockups/crm-saas/OnboardingConnect.tsx"),
@@ -20,5 +17,4 @@ export const modules: ModuleMap = {
   "./components/mockups/crm-saas/UnifiedInbox.tsx": () => import("../components/mockups/crm-saas/UnifiedInbox.tsx"),
   "./components/mockups/crm-saas/WATemplates.tsx": () => import("../components/mockups/crm-saas/WATemplates.tsx"),
   "./components/mockups/crm-saas/WebhookWorkflows.tsx": () => import("../components/mockups/crm-saas/WebhookWorkflows.tsx"),
-  "./components/mockups/crm-saas/WhatsAppConnect.tsx": () => import("../components/mockups/crm-saas/WhatsAppConnect.tsx")
 };
