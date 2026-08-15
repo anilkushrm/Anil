@@ -101,7 +101,8 @@ export function Sidebar({ active = "dashboard" }: { active?: string }) {
     setOpenGroups(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
 
   const isActive = (key: string) => active === key;
-  const groupHasActive = (g: NavGroup) => g.children?.some(c => c.key === active);
+  const groupHasActive = (g: NavGroup) =>
+    g.children?.some(c => c.key === active) || active === g.key;
 
   return (
     <aside className={`${collapsed ? "w-[64px]" : "w-[220px]"} shrink-0 bg-[#0d1829] flex min-h-screen flex-col transition-all duration-200 border-r border-white/5`}>

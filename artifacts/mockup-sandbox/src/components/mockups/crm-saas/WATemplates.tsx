@@ -88,7 +88,7 @@ export function WATemplates() {
 
   return (
     <div className="flex min-h-[100dvh] bg-[#f4f7fb] text-slate-800">
-      <Sidebar active="WhatsApp Templates" />
+      <Sidebar active="templates" />
       <main className="flex min-w-0 flex-1 flex-col">
         <Topbar title="WhatsApp Templates" subtitle="Create, manage, and submit message templates for approval" />
         <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:p-5">

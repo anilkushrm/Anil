@@ -100,7 +100,7 @@ export default function DocumentTraining() {
 
   return (
     <div className="flex min-h-screen bg-[#f5f7fb] text-slate-800" style={{ fontFamily: "DM Sans, ui-sans-serif, sans-serif" }}>
-      <Sidebar active="AI & Sequences" />
+      <Sidebar active="knowledge" />
       <main className="min-w-0 flex-1">
         <Topbar title="AI & Sequences" subtitle="Teach your AI what your team knows" />
         <div className="mx-auto max-w-[1280px] px-5 py-6 md:px-8">

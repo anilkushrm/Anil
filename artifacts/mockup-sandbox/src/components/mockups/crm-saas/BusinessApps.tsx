@@ -202,7 +202,7 @@ export function BusinessApps() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#f4f6f5]">
-      <Sidebar active="business-apps" />
+      <Sidebar active="business" />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* topbar */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">

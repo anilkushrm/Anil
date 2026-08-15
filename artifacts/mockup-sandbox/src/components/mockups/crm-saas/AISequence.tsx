@@ -70,7 +70,7 @@ export function AISequence() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      <Sidebar active="AI & Sequences" />
+      <Sidebar active="agents" />
       <main className="min-w-0 flex-1 overflow-y-auto">
         <Topbar title="AI & Sequences" subtitle="Automate conversations, capture intent, and follow up at the right moment" />
         {notice && <div className="fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-xl"><Check size={14} className="text-green-400" />{notice}</div>}

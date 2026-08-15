@@ -93,7 +93,7 @@ export function ChatbotFlow() {
 
   return (
     <div className="flex min-h-[100dvh] bg-[#f4f7fb] text-slate-900">
-      <Sidebar active="Chatbot Flows" />
+      <Sidebar active="flows" />
       <main className="flex min-w-0 flex-1 flex-col">
         <Topbar title="Chatbot Flows" subtitle="Automations that keep every conversation moving" />
         <div className="flex min-h-16 flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-5 py-3">

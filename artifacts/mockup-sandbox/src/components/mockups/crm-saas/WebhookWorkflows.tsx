@@ -332,7 +332,7 @@ export default function WebhookWorkflows() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8fafc] font-sans">
-      <Sidebar active="Settings" />
+      <Sidebar active="webhooks" />
       <div className="flex flex-1 flex-col overflow-hidden">
 
         {/* Top bar */}
