@@ -7,7 +7,6 @@ export const modules: ModuleMap = {
   "./components/mockups/crm-saas/BusinessApps.tsx": () => import("../components/mockups/crm-saas/BusinessApps.tsx"),
   "./components/mockups/crm-saas/Campaigns.tsx": () => import("../components/mockups/crm-saas/Campaigns.tsx"),
   "./components/mockups/crm-saas/ChannelsConnect.tsx": () => import("../components/mockups/crm-saas/ChannelsConnect.tsx"),
-  "./components/mockups/crm-saas/ChannelsConnect.tsx": () => import("../components/mockups/crm-saas/ChannelsConnect.tsx"),
   "./components/mockups/crm-saas/ChatbotFlow.tsx": () => import("../components/mockups/crm-saas/ChatbotFlow.tsx"),
   "./components/mockups/crm-saas/Dashboard.tsx": () => import("../components/mockups/crm-saas/Dashboard.tsx"),
   "./components/mockups/crm-saas/DocumentTraining.tsx": () => import("../components/mockups/crm-saas/DocumentTraining.tsx"),
