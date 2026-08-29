@@ -21,10 +21,10 @@ export default function Home() {
   }, [session, isLoading, setLocation]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f8fb]">
       <div className="animate-pulse flex flex-col items-center gap-4">
-        <div className="h-12 w-12 rounded-full bg-primary/20"></div>
-        <div className="h-4 w-32 bg-muted rounded"></div>
+        <div className="h-12 w-12 rounded-xl bg-[#22c55e] shadow-lg shadow-green-500/20"></div>
+        <div className="h-4 w-32 bg-slate-200 rounded"></div>
       </div>
     </div>
   );

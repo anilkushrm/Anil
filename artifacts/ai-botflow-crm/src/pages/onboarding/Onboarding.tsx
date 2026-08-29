@@ -13,11 +13,11 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-lg shadow-lg border-border/50">
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f8fb] p-4">
+      <Card className="w-full max-w-lg shadow-lg border-slate-200">
         <CardHeader className="text-center pb-8 pt-10">
-          <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-            <Bot className="h-8 w-8 text-primary" />
+            <div className="mx-auto bg-[#d9f7e4] w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+            <Bot className="h-8 w-8 text-[#159447]" />
           </div>
           <CardTitle className="text-3xl font-bold">Set up your Workspace</CardTitle>
           <CardDescription className="text-base mt-2">

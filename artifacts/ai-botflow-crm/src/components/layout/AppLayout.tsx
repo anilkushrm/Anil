@@ -141,6 +141,22 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
   }, [location]);
 
   const workspaceInitials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : "WS";
+  const routeTitles: Record<string, [string, string]> = {
+    "/inbox": ["Inbox", "Keep every customer conversation moving."],
+    "/leads": ["Leads", "Manage your pipeline and track deals."],
+    "/flows": ["Flows", "Automate the conversations your team repeats."],
+    "/templates": ["Message Templates", "Create reusable, categorized message copy."],
+    "/campaigns": ["Campaigns", "Prepare campaign drafts and audiences."],
+    "/knowledge": ["Knowledge Base", "Give your AI agents the context they need."],
+    "/channels": ["Channels", "Connect the places your customers reach you."],
+    "/team": ["Team", "Manage workspace members and permissions."],
+    "/billing": ["Billing & Wallet", "Review your plan, wallet ledger, and pricing."],
+    "/integrations": ["Integrations", "Connect webhooks and developer tools."],
+    "/settings": ["Settings", "Keep your workspace profile up to date."],
+  };
+  const matchedTitle = Object.entries(routeTitles).find(([route]) => location.startsWith(route));
+  const resolvedTitle = title || matchedTitle?.[1]?.[0] || "Ai Botflow CRM";
+  const resolvedSubtitle = subtitle || matchedTitle?.[1]?.[1];
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#f5f8fb] text-slate-800">
@@ -295,15 +311,15 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
 
         {/* Desktop Topbar */}
         <div className="hidden md:block">
-          {title && <Topbar title={title} subtitle={subtitle} />}
+          <Topbar title={resolvedTitle} subtitle={resolvedSubtitle} />
         </div>
         
         <main className="flex-1 overflow-auto bg-[#f5f8fb] w-full">
           <div className="p-4 md:p-7 max-w-[1600px] mx-auto w-full">
             {/* Mobile Title */}
             <div className="md:hidden mb-6">
-              <h1 className="text-2xl font-display font-extrabold tracking-tight text-slate-900">{title}</h1>
-              {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
+              <h1 className="text-2xl font-display font-extrabold tracking-tight text-slate-900">{resolvedTitle}</h1>
+              {resolvedSubtitle && <p className="text-xs text-slate-500 mt-1">{resolvedSubtitle}</p>}
             </div>
             {children}
           </div>

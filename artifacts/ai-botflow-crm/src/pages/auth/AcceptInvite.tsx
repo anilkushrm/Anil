@@ -50,7 +50,7 @@ export default function AcceptInvite() {
 
   if (invitation.isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f8fb]">
         <div className="h-10 w-10 animate-pulse rounded-full bg-primary/20" aria-label="Loading invitation" />
       </div>
     );
@@ -58,7 +58,7 @@ export default function AcceptInvite() {
 
   if (!invitation.data || invitation.isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f8fb] p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Invitation unavailable</CardTitle>
@@ -75,12 +75,12 @@ export default function AcceptInvite() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 p-4">
-      <div className="mb-8 flex items-center gap-2 text-primary font-bold text-2xl">
-        <Bot className="h-8 w-8" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f8fb] p-4">
+      <div className="mb-8 flex items-center gap-2 text-slate-900 font-display font-extrabold text-2xl">
+        <span className="h-9 w-9 rounded-xl bg-[#22c55e] text-white flex items-center justify-center shadow-lg shadow-green-500/20"><Bot className="h-5 w-5" /></span>
         <span>Ai Botflow <span className="text-emerald-500">CRM</span></span>
       </div>
-      <Card className="w-full max-w-md shadow-lg border-border/50">
+      <Card className="w-full max-w-md shadow-lg border-slate-200">
         <CardHeader>
           <CardTitle>Join {invitation.data.workspaceName}</CardTitle>
           <CardDescription>

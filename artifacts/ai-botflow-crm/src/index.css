@@ -69,7 +69,7 @@
   --popover-foreground: 240 10% 10%;
   --popover-border: 240 10% 92%;
 
-  --primary: 250 89% 55%;
+  --primary: 142 62% 42%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 240 10% 90%;
@@ -78,8 +78,8 @@
   --muted: 240 10% 96%;
   --muted-foreground: 240 5% 45%;
 
-  --accent: 250 89% 96%;
-  --accent-foreground: 250 89% 40%;
+  --accent: 142 42% 95%;
+  --accent-foreground: 142 55% 30%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
@@ -87,7 +87,7 @@
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 240 10% 30%;
   --sidebar-border: 240 10% 90%;
-  --sidebar-primary: 250 89% 55%;
+  --sidebar-primary: 142 62% 42%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 240 10% 96%;
   --sidebar-accent-foreground: 240 10% 10%;
@@ -158,4 +158,34 @@
   .panel-shadow {
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 0 3px rgba(0,0,0,0.02);
   }
+}
+
+/* Production CRM surface language: compact, quiet, and green-led. */
+main h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: #172033;
+}
+/* AppLayout owns the compact page title bar; keep legacy page headers from
+   consuming a second vertical band on CRUD screens. */
+main > div > div.space-y-6 > div:first-child h1,
+main > div > div.space-y-6 > div:first-child h1 + p {
+  display: none;
+}
+.bg-muted\/30 { background-color: #f5f8fb !important; }
+.bg-gray-50 { background-color: #f5f8fb !important; }
+.rounded-xl.border, .rounded-lg.border {
+  border-color: #dce4ec;
+}
+.shadow-lg { box-shadow: 0 10px 28px -12px rgba(16, 35, 58, .18) !important; }
+select {
+  border-color: #dce4ec;
+  background-color: #f8fafc;
+  color: #334155;
+  font-size: .8125rem;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
 }
