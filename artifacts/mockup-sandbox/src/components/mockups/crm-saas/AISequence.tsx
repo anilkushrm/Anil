@@ -69,7 +69,7 @@ export function AISequence() {
   const action = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(""), 2200); };
 
   return (
-    <div className="flex min-h-screen overflow-hidden bg-[#f5f8fb] text-slate-800">
+    <div className="flex min-h-[100dvh] overflow-hidden bg-[#f5f8fb] text-slate-800">
       <Sidebar active="agents" />
       <main className="min-h-screen min-w-0 flex-1 overflow-y-auto">
         <Topbar title="AI & Sequences" subtitle="Automate conversations, capture intent, and follow up at the right moment" />

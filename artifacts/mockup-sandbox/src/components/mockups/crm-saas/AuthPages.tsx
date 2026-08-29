@@ -248,7 +248,7 @@ function SignupForm({ onSwitch }: { onSwitch: () => void }) {
 export function AuthPages() {
   const [tab, setTab] = useState<"login" | "signup">("login");
   return (
-    <div className="flex min-h-screen w-full bg-[#f6f8f7]">
+    <div className="flex min-h-[100dvh] w-full bg-[#f5f8fb]">
       <LeftPanel />
 
       {/* Right panel */}
