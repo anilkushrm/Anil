@@ -143,8 +143,13 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
   const workspaceInitials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : "WS";
   const routeTitles: Record<string, [string, string]> = {
     "/inbox": ["Inbox", "Keep every customer conversation moving."],
+    "/contacts": ["Contacts", "Know every person connected to your pipeline."],
     "/leads": ["Leads", "Manage your pipeline and track deals."],
+    "/pipeline": ["Pipeline", "Move opportunities forward with a clear view of every stage."],
+    "/tasks": ["Tasks & follow-ups", "Keep the next action visible for every customer conversation."],
     "/flows": ["Flows", "Automate the conversations your team repeats."],
+    "/sequences": ["Sequences", "Plan multi-step follow-up journeys for leads and contacts."],
+    "/rules": ["Rules", "Define routing and handoff logic for your communication workspace."],
     "/templates": ["Message Templates", "Create reusable, categorized message copy."],
     "/campaigns": ["Campaigns", "Prepare campaign drafts and audiences."],
     "/knowledge": ["Knowledge Base", "Give your AI agents the context they need."],
