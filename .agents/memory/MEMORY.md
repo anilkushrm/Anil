@@ -1,0 +1,2 @@
+- [Tenant auth lifecycle](tenant-auth-lifecycle.md) — Keep session cache, active membership checks, and one-time invitation activation in sync across API and navigation.
+- [Webhook egress safety](webhook-egress-safety.md) — Validate public DNS and pin outbound HTTPS sockets to that exact address to prevent DNS rebinding.

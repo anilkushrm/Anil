@@ -3,13 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Ai Botflow CRM API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Workspace authentication
+  - name: workspace
+    description: Workspace and dashboard operations
+  - name: leads
+    description: Lead management
+  - name: inbox
+    description: Unified conversations
+  - name: team
+    description: Team management
+  - name: channels
+    description: Channel connection settings
 paths:
   /healthz:
     get:
@@ -24,7 +36,692 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get the current session
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Create an owner and workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in to a workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed-in session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the current session
+      responses:
+        "204":
+          description: Logged out
+  /auth/invitations/{token}:
+    get:
+      operationId: getInvitation
+      tags: [auth]
+      summary: Get a pending team invitation
+      parameters:
+        - $ref: "#/components/parameters/Token"
+      responses:
+        "200":
+          description: Invitation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationInfo"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /auth/invitations/{token}/accept:
+    post:
+      operationId: acceptInvitation
+      tags: [auth]
+      summary: Accept a team invitation
+      parameters:
+        - $ref: "#/components/parameters/Token"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationAcceptInput"
+      responses:
+        "200":
+          description: Activated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /workspace:
+    get:
+      operationId: getWorkspace
+      tags: [workspace]
+      summary: Get the current workspace
+      responses:
+        "200":
+          description: Workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workspace"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      operationId: updateWorkspace
+      tags: [workspace]
+      summary: Update workspace profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceUpdate"
+      responses:
+        "200":
+          description: Updated workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workspace"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [workspace]
+      summary: Get dashboard metrics and activity
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /leads:
+    get:
+      operationId: listLeads
+      tags: [leads]
+      summary: List searchable leads
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: stage
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: number, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          description: Leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lead"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createLead
+      tags: [leads]
+      summary: Create a lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadInput"
+      responses:
+        "201":
+          description: Lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /leads/{id}:
+    patch:
+      operationId: updateLead
+      tags: [leads]
+      summary: Update a lead
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadUpdate"
+      responses:
+        "200":
+          description: Updated lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /inbox/conversations:
+    get:
+      operationId: listConversations
+      tags: [inbox]
+      summary: List conversations
+      parameters:
+        - name: channel
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /inbox/conversations/{id}/messages:
+    get:
+      operationId: listMessages
+      tags: [inbox]
+      summary: List messages in a conversation
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: sendMessage
+      tags: [inbox]
+      summary: Add a message to a conversation
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "201":
+          description: Message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /team:
+    get:
+      operationId: listTeamMembers
+      tags: [team]
+      summary: List workspace team members
+      responses:
+        "200":
+          description: Team members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamMember"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: inviteTeamMember
+      tags: [team]
+      summary: Invite a team member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteInput"
+      responses:
+        "201":
+          description: Invitation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /channels:
+    get:
+      operationId: listChannels
+      tags: [channels]
+      summary: List channel connection states
+      responses:
+        "200":
+          description: Channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Channel"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /channels/{id}:
+    patch:
+      operationId: updateChannel
+      tags: [channels]
+      summary: Update channel setup state
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChannelUpdate"
+      responses:
+        "200":
+          description: Channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /flows:
+    get:
+      operationId: listFlows
+      tags: [flows]
+      responses:
+        "200":
+          description: Automation flows
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Flow" } }
+    post:
+      operationId: createFlow
+      tags: [flows]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FlowInput" }
+      responses:
+        "201":
+          description: Created flow
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Flow" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /flows/{id}:
+    patch:
+      operationId: updateFlow
+      tags: [flows]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FlowUpdate" }
+      responses:
+        "200":
+          description: Updated flow
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Flow" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      responses:
+        "200":
+          description: Message templates
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Template" } }
+    post:
+      operationId: createTemplate
+      tags: [templates]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TemplateInput" }
+      responses:
+        "201":
+          description: Created template
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Template" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /templates/{id}:
+    patch:
+      operationId: updateTemplate
+      tags: [templates]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TemplateUpdate" }
+      responses:
+        "200":
+          description: Updated template
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Template" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      responses:
+        "200":
+          description: Campaign drafts
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Campaign" } }
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CampaignInput" }
+      responses:
+        "201":
+          description: Created campaign draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Campaign" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /campaigns/{id}:
+    patch:
+      operationId: updateCampaign
+      tags: [campaigns]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CampaignUpdate" }
+      responses:
+        "200":
+          description: Updated campaign draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Campaign" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /knowledge:
+    get:
+      operationId: listKnowledgeSources
+      tags: [knowledge]
+      responses:
+        "200":
+          description: Knowledge sources
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/KnowledgeSource" } }
+    post:
+      operationId: createKnowledgeSource
+      tags: [knowledge]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/KnowledgeSourceInput" }
+      responses:
+        "201":
+          description: Created knowledge source
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/KnowledgeSource" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /knowledge/{id}:
+    delete:
+      operationId: deleteKnowledgeSource
+      tags: [knowledge]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /billing:
+    get:
+      operationId: getBilling
+      tags: [billing]
+      responses:
+        "200":
+          description: Billing ledger
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingSummary" }
+  /api-keys:
+    get:
+      operationId: listApiKeys
+      tags: [integrations]
+      responses:
+        "200":
+          description: API keys
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ApiKey" } }
+    post:
+      operationId: createApiKey
+      tags: [integrations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NamedResourceInput" }
+      responses:
+        "201":
+          description: Created API key shown once
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiKeyCreated" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api-keys/{id}:
+    delete:
+      operationId: revokeApiKey
+      tags: [integrations]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204":
+          description: Revoked
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /webhooks:
+    get:
+      operationId: listWebhooks
+      tags: [integrations]
+      responses:
+        "200":
+          description: Webhooks
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Webhook" } }
+    post:
+      operationId: createWebhook
+      tags: [integrations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WebhookInput" }
+      responses:
+        "201":
+          description: Created webhook
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Webhook" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /webhooks/{id}:
+    delete:
+      operationId: deleteWebhook
+      tags: [integrations]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /webhook-deliveries:
+    get:
+      operationId: listWebhookDeliveries
+      tags: [integrations]
+      responses:
+        "200":
+          description: Recent webhook delivery attempts
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/WebhookDelivery" } }
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    Token:
+      name: token
+      in: path
+      required: true
+      schema: { type: string, minLength: 20 }
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Insufficient permission
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +730,390 @@ components:
           type: string
       required:
         - status
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [owner, admin, agent] }
+    Workspace:
+      type: object
+      required: [id, name, slug, plan]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        plan: { type: string, enum: [basic, starter, growth, enterprise] }
+        walletBalance: { type: number }
+    WorkspaceUpdate:
+      type: object
+      required: [name, slug]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        slug: { type: string, pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", minLength: 2, maxLength: 80 }
+    Session:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated: { type: boolean }
+        user:
+          anyOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+        workspace:
+          anyOf:
+            - $ref: "#/components/schemas/Workspace"
+            - type: "null"
+    RegisterInput:
+      type: object
+      required: [name, email, password, workspaceName]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        email: { type: string }
+        password: { type: string, minLength: 8, maxLength: 128 }
+        workspaceName: { type: string, minLength: 2, maxLength: 100 }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string, minLength: 1, maxLength: 128 }
+        workspaceSlug: { type: string, maxLength: 80 }
+    Dashboard:
+      type: object
+      required: [metrics, pipeline, recentActivity]
+      properties:
+        metrics:
+          type: object
+          required: [leads, messages, contacts, campaigns]
+          properties:
+            leads: { type: number }
+            messages: { type: number }
+            contacts: { type: number }
+            campaigns: { type: number }
+        pipeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/PipelineMetric"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/Activity"
+    PipelineMetric:
+      type: object
+      required: [stage, count, value]
+      properties:
+        stage: { type: string }
+        count: { type: number }
+        value: { type: number }
+    Activity:
+      type: object
+      required: [id, title, detail, createdAt]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        createdAt: { type: string, format: date-time }
+    Lead:
+      type: object
+      required: [id, name, company, email, phone, source, stage, value, assignee, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        company: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        source: { type: string, enum: [whatsapp, instagram, facebook, website, manual] }
+        stage: { type: string, enum: [new, contacted, qualified, proposal, won, lost] }
+        value: { type: number }
+        assignee: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    LeadInput:
+      type: object
+      required: [name, email, phone]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        company: { type: string, maxLength: 100 }
+        email: { type: string }
+        phone: { type: string, maxLength: 30 }
+        source: { type: string, enum: [whatsapp, instagram, facebook, website, manual], default: manual }
+        stage: { type: string, enum: [new, contacted, qualified, proposal, won, lost], default: new }
+        value: { type: number, minimum: 0, default: 0 }
+        assignee: { type: string, maxLength: 80 }
+        tags:
+          type: array
+          items: { type: string, maxLength: 30 }
+    LeadUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        company: { type: string, maxLength: 100 }
+        email: { type: string }
+        phone: { type: string, maxLength: 30 }
+        source: { type: string, enum: [whatsapp, instagram, facebook, website, manual] }
+        stage: { type: string, enum: [new, contacted, qualified, proposal, won, lost] }
+        value: { type: number, minimum: 0 }
+        assignee: { type: string, maxLength: 80 }
+        tags:
+          type: array
+          items: { type: string, maxLength: 30 }
+    Conversation:
+      type: object
+      required: [id, contactName, channel, lastMessage, unread, updatedAt]
+      properties:
+        id: { type: string }
+        contactName: { type: string }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        lastMessage: { type: string }
+        unread: { type: number }
+        updatedAt: { type: string, format: date-time }
+        leadId:
+          type: ["string", "null"]
+    Message:
+      type: object
+      required: [id, conversationId, body, direction, sentAt]
+      properties:
+        id: { type: string }
+        conversationId: { type: string }
+        body: { type: string }
+        direction: { type: string, enum: [inbound, outbound] }
+        sentAt: { type: string, format: date-time }
+        senderName: { type: string }
+    MessageInput:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 4000 }
+    TeamMember:
+      type: object
+      required: [id, name, email, role, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [owner, admin, agent] }
+        status: { type: string, enum: [active, invited] }
+    InviteInput:
+      type: object
+      required: [email, role]
+      properties:
+        email: { type: string }
+        role: { type: string, enum: [admin, agent] }
+    InviteResult:
+      type: object
+      required: [member, inviteToken]
+      properties:
+        member:
+          $ref: "#/components/schemas/TeamMember"
+        inviteToken: { type: string }
+    InvitationInfo:
+      type: object
+      required: [workspaceName, email, role, expiresAt, needsPasswordSetup]
+      properties:
+        workspaceName: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [admin, agent] }
+        expiresAt: { type: string, format: date-time }
+        needsPasswordSetup: { type: boolean }
+    InvitationAcceptInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        password: { type: string, minLength: 8, maxLength: 128 }
+    Flow:
+      type: object
+      required: [id, name, triggerType, actionText, status, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        triggerType: { type: string, enum: [keyword, new_lead, webhook] }
+        actionText: { type: string }
+        status: { type: string, enum: [draft, active, paused] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    FlowInput:
+      type: object
+      required: [name, triggerType, actionText]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        triggerType: { type: string, enum: [keyword, new_lead, webhook] }
+        actionText: { type: string, minLength: 1, maxLength: 2000 }
+    FlowUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        triggerType: { type: string, enum: [keyword, new_lead, webhook] }
+        actionText: { type: string, minLength: 1, maxLength: 2000 }
+        status: { type: string, enum: [draft, active, paused] }
+    Template:
+      type: object
+      required: [id, name, category, body, status, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        category: { type: string, enum: [marketing, utility, authentication] }
+        body: { type: string }
+        status: { type: string, enum: [draft, approved] }
+        createdAt: { type: string, format: date-time }
+    TemplateInput:
+      type: object
+      required: [name, category, body]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        category: { type: string, enum: [marketing, utility, authentication] }
+        body: { type: string, minLength: 1, maxLength: 2000 }
+    TemplateUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        category: { type: string, enum: [marketing, utility, authentication] }
+        body: { type: string, minLength: 1, maxLength: 2000 }
+        status: { type: string, enum: [draft, approved] }
+    Campaign:
+      type: object
+      required: [id, name, channel, status, audienceCount, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        status: { type: string, enum: [draft, ready] }
+        audienceCount: { type: number }
+        createdAt: { type: string, format: date-time }
+    CampaignInput:
+      type: object
+      required: [name, channel]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        audienceCount: { type: number, minimum: 0, maximum: 1000000 }
+    CampaignUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        audienceCount: { type: number, minimum: 0, maximum: 1000000 }
+        status: { type: string, enum: [draft, ready] }
+    KnowledgeSource:
+      type: object
+      required: [id, title, content, status, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        content: { type: string }
+        status: { type: string, enum: [ready] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    KnowledgeSourceInput:
+      type: object
+      required: [title, content]
+      properties:
+        title: { type: string, minLength: 2, maxLength: 120 }
+        content: { type: string, minLength: 1, maxLength: 20000 }
+    BillingTransaction:
+      type: object
+      required: [id, type, amount, reference, createdAt]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        amount: { type: number }
+        reference: { type: string }
+        createdAt: { type: string, format: date-time }
+    BillingSummary:
+      type: object
+      required: [plan, walletBalance, currency, pricing, transactions]
+      properties:
+        plan: { type: string }
+        walletBalance: { type: number }
+        currency: { type: string, enum: [INR] }
+        pricing:
+          type: object
+          required: [marketing, utilityAuthentication, social]
+          properties:
+            marketing: { type: number }
+            utilityAuthentication: { type: number }
+            social: { type: number }
+        transactions:
+          type: array
+          items: { $ref: "#/components/schemas/BillingTransaction" }
+    NamedResourceInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+    ApiKey:
+      type: object
+      required: [id, name, keyPrefix, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        keyPrefix: { type: string }
+        lastUsedAt:
+          type: ["string", "null"]
+        createdAt: { type: string, format: date-time }
+    ApiKeyCreated:
+      type: object
+      required: [apiKey, secret]
+      properties:
+        apiKey: { $ref: "#/components/schemas/ApiKey" }
+        secret: { type: string }
+    Webhook:
+      type: object
+      required: [id, name, url, status, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        url: { type: string }
+        status: { type: string, enum: [active] }
+        createdAt: { type: string, format: date-time }
+    WebhookInput:
+      type: object
+      required: [name, url]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        url: { type: string, minLength: 8, maxLength: 2000 }
+    WebhookDelivery:
+      type: object
+      required: [id, webhookId, event, status, attemptCount, createdAt]
+      properties:
+        id: { type: string }
+        webhookId: { type: string }
+        event: { type: string, enum: [lead.created] }
+        status: { type: string, enum: [pending, delivered, failed] }
+        attemptCount: { type: number }
+        httpStatus:
+          type: ["number", "null"]
+        lastError:
+          type: ["string", "null"]
+        deliveredAt:
+          type: ["string", "null"]
+        createdAt: { type: string, format: date-time }
+    Channel:
+      type: object
+      required: [id, type, name, status, mode]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [whatsapp, instagram, facebook] }
+        name: { type: string }
+        status: { type: string, enum: [connected, not_configured, error] }
+        mode: { type: string, enum: [embedded_signup, oauth, webhook] }
+        accountName:
+          type: ["string", "null"]
+        lastSyncedAt:
+          type: ["string", "null"]
+    ChannelUpdate:
+      type: object
+      properties:
+        status: { type: string, enum: [connected, not_configured, error] }
+        accountName: { type: string }
 
