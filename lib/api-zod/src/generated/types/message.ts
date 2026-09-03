@@ -5,6 +5,7 @@
  * Ai Botflow CRM API
  * OpenAPI spec version: 0.1.0
  */
+import type { MessageDeliveryStatus } from './messageDeliveryStatus';
 import type { MessageDirection } from './messageDirection';
 
 export interface Message {
@@ -14,4 +15,12 @@ export interface Message {
   direction: MessageDirection;
   sentAt: Date;
   senderName?: string;
+  deliveryStatus: MessageDeliveryStatus;
+  deliveryAttemptCount: number;
+  /** @nullable */
+  deliveryError?: string | null;
+  /** @nullable */
+  providerMessageId?: string | null;
+  /** @nullable */
+  deliveredAt?: string | null;
 }

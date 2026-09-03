@@ -81,6 +81,7 @@ export default function Leads() {
                 <TableHead>Contact</TableHead>
                 <TableHead>Stage</TableHead>
                 <TableHead>Source</TableHead>
+                <TableHead>Messaging</TableHead>
                 <TableHead className="text-right">Value</TableHead>
                 <TableHead className="text-right">Updated</TableHead>
               </TableRow>
@@ -88,13 +89,13 @@ export default function Leads() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Loading leads...
                   </TableCell>
                 </TableRow>
               ) : leads.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No leads found. Create one to get started.
                   </TableCell>
                 </TableRow>
@@ -122,6 +123,24 @@ export default function Leads() {
                     </TableCell>
                     <TableCell className="capitalize text-muted-foreground text-sm">
                       {lead.source}
+                    </TableCell>
+                    <TableCell>
+                      <select
+                        value={lead.messagingConsent}
+                        aria-label={`Messaging consent for ${lead.name}`}
+                        disabled={updateLead.isPending}
+                        className="h-8 rounded-md border bg-background px-2 text-sm capitalize"
+                        onChange={(event) => updateLead.mutate({
+                          id: lead.id,
+                          data: { messagingConsent: event.target.value as "unknown" | "opted_in" | "opted_out" },
+                        }, {
+                          onSuccess: () => queryClient.invalidateQueries({ queryKey: getListLeadsQueryKey() }),
+                        })}
+                      >
+                        <option value="unknown">Unknown</option>
+                        <option value="opted_in">Opted in</option>
+                        <option value="opted_out">Opted out</option>
+                      </select>
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       ${lead.value.toLocaleString()}

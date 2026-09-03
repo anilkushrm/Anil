@@ -1,6 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { startAutomationScheduler } from "./lib/automation";
+import { startMetaWebhookWorker } from "./lib/webhooks";
+import { startOutboundDeliveryWorker } from "./lib/meta-delivery";
 
 const rawPort = process.env["PORT"];
 
@@ -24,4 +26,6 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
   startAutomationScheduler();
+  startMetaWebhookWorker();
+  startOutboundDeliveryWorker();
 });

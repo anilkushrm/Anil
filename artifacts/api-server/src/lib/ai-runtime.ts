@@ -12,6 +12,7 @@ import {
   messagesTable,
 } from "@workspace/db";
 import { enrollMatchingSequences } from "./automation-enrollment";
+import { persistLiveOutboundMessage } from "./meta-delivery";
 
 type LeadUpdates = Partial<Pick<typeof leadsTable.$inferInsert, "company" | "email" | "phone" | "stage" | "assignee" | "tags">>;
 
@@ -127,6 +128,23 @@ export async function executeAiRuntime(
     eq(leadsTable.workspaceId, workspaceId),
   )).limit(1);
   if (!lead) throw new Error("Lead not found.");
+  if (lead.messagingConsent === "opted_out") {
+    return {
+      status: "skipped" as const,
+      reason: "Recipient has opted out of messaging.",
+      replyPreview: "",
+      provider: settings.provider,
+      model: settings.model,
+      promptApplied: false,
+      companyName: settings.companyName,
+      memoryUsed: relevantMemory.map((item) => item.title),
+      mappingsApplied: [] as string[],
+      rulesExecuted: [] as string[],
+      historyMessages: history.length,
+      contactUpdated: false,
+      senderName: settings.botName,
+    };
+  }
 
   const mappings = await db.select().from(aiMappingsTable).where(and(
     eq(aiMappingsTable.workspaceId, workspaceId),
@@ -244,6 +262,16 @@ export async function persistAiDryRunReply(
     }).returning();
     return message!;
   });
+}
+
+export async function persistAiLiveReply(
+  workspaceId: string,
+  conversationId: string,
+  body: string,
+  senderName: string,
+  sourceEventId?: string,
+) {
+  return persistLiveOutboundMessage(workspaceId, conversationId, body, senderName, sourceEventId);
 }
 
 export async function composeAiOutboundMessage(workspaceId: string, instruction: string) {

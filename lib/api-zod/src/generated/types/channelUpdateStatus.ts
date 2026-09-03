@@ -10,7 +10,5 @@ export type ChannelUpdateStatus = typeof ChannelUpdateStatus[keyof typeof Channe
 
 
 export const ChannelUpdateStatus = {
-  connected: 'connected',
   not_configured: 'not_configured',
-  error: 'error',
 } as const;

@@ -1,4 +1,5 @@
-import { boolean, index, integer, pgTable, real, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, real, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -120,6 +121,8 @@ export const leadsTable = pgTable(
     value: real("value").notNull().default(0),
     assignee: text("assignee").notNull().default("Unassigned"),
     tags: text("tags").array().notNull().default([]),
+    messagingConsent: text("messaging_consent").notNull().default("unknown"),
+    optedOutAt: timestamp("opted_out_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   },
@@ -134,12 +137,23 @@ export const conversationsTable = pgTable(
     leadId: uuid("lead_id").references(() => leadsTable.id, { onDelete: "set null" }),
     contactName: text("contact_name").notNull(),
     channel: text("channel").notNull(),
+    channelAccountId: text("channel_account_id").notNull().default(""),
+    externalParticipantId: text("external_participant_id").notNull().default(""),
+    externalThreadId: text("external_thread_id").notNull().default(""),
     lastMessage: text("last_message").notNull().default(""),
     unread: integer("unread").notNull().default(0),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("conversations_workspace_updated_idx").on(table.workspaceId, table.updatedAt)],
+  (table) => [
+    index("conversations_workspace_updated_idx").on(table.workspaceId, table.updatedAt),
+    uniqueIndex("conversations_meta_participant_idx").on(
+      table.workspaceId,
+      table.channel,
+      table.channelAccountId,
+      table.externalParticipantId,
+    ).where(sql`${table.channelAccountId} <> '' AND ${table.externalParticipantId} <> ''`),
+  ],
 );
 
 export const messagesTable = pgTable(
@@ -153,10 +167,22 @@ export const messagesTable = pgTable(
     senderName: text("sender_name").notNull(),
     sequenceRunId: uuid("sequence_run_id"),
     sequenceStepId: uuid("sequence_step_id"),
+    sourceEventId: text("source_event_id"),
     deliveryStatus: text("delivery_status").notNull().default("delivered"),
+    deliveryAttemptCount: integer("delivery_attempt_count").notNull().default(0),
+    deliveryError: text("delivery_error"),
+    deliveryNextAttemptAt: timestamp("delivery_next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+    deliveryLeaseUntil: timestamp("delivery_lease_until", { withTimezone: true }),
+    providerMessageId: text("provider_message_id"),
+    deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("messages_conversation_sent_idx").on(table.conversationId, table.sentAt)],
+  (table) => [
+    index("messages_conversation_sent_idx").on(table.conversationId, table.sentAt),
+    index("messages_delivery_queue_idx").on(table.deliveryStatus, table.deliveryNextAttemptAt),
+    uniqueIndex("messages_provider_message_idx").on(table.providerMessageId),
+    uniqueIndex("messages_source_event_idx").on(table.sourceEventId),
+  ],
 );
 
 export const tasksTable = pgTable(
@@ -384,11 +410,37 @@ export const channelsTable = pgTable(
     status: text("status").notNull().default("not_configured"),
     mode: text("mode").notNull(),
     accountName: text("account_name"),
+    externalAccountId: text("external_account_id"),
+    credentialsCiphertext: text("credentials_ciphertext"),
     lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("channels_workspace_type_idx").on(table.workspaceId, table.type)],
+  (table) => [
+    uniqueIndex("channels_workspace_type_idx").on(table.workspaceId, table.type),
+    uniqueIndex("channels_external_account_idx").on(table.externalAccountId),
+  ],
+);
+
+export const metaOAuthTransactionsTable = pgTable(
+  "meta_oauth_transactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stateHash: text("state_hash").notNull(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    channelId: uuid("channel_id").notNull().references(() => channelsTable.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    authorizationCiphertext: text("authorization_ciphertext"),
+    candidatePages: jsonb("candidate_pages").notNull().default([]),
+    selectionConsumedAt: timestamp("selection_consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("meta_oauth_transactions_state_idx").on(table.stateHash),
+    index("meta_oauth_transactions_expiry_idx").on(table.expiresAt),
+  ],
 );
 
 export const apiKeysTable = pgTable(
@@ -434,6 +486,26 @@ export const webhookDeliveriesTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("webhook_deliveries_workspace_created_idx").on(table.workspaceId, table.createdAt)],
+);
+
+export const metaWebhookEventsTable = pgTable(
+  "meta_webhook_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    providerEventId: text("provider_event_id").notNull(),
+    kind: text("kind").notNull().default("inbound"),
+    payload: jsonb("payload").notNull().default({}),
+    status: text("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastError: text("last_error"),
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("meta_webhook_events_provider_event_idx").on(table.providerEventId),
+    index("meta_webhook_events_status_next_idx").on(table.status, table.nextAttemptAt),
+  ],
 );
 
 export const billingTransactionsTable = pgTable(

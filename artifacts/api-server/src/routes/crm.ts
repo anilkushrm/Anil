@@ -55,6 +55,13 @@ import {
   CreateTemplateResponse,
   CreateWebhookBody,
   CreateWebhookResponse,
+  CompleteMetaChannelConnectionQueryParams,
+  CompleteMetaChannelConnectionResponse,
+  CompleteEmbeddedChannelConnectionBody,
+  CompleteEmbeddedChannelConnectionParams,
+  CompleteEmbeddedChannelConnectionResponse,
+  ConnectChannelParams,
+  ConnectChannelResponse,
   DeleteAiMappingParams,
   DeleteAiMemoryItemParams,
   DeleteAiRuleParams,
@@ -79,6 +86,8 @@ import {
   ListSequencesResponse,
   ProcessAiInboundEventBody,
   ProcessAiInboundEventResponse,
+  ReceiveMetaChannelWebhookBody,
+  ReceiveMetaChannelWebhookResponse,
   UpdateAiMappingBody,
   UpdateAiMappingParams,
   UpdateAiMappingResponse,
@@ -122,6 +131,8 @@ import {
   SendMessageBody,
   SendMessageParams,
   SendMessageResponse,
+  SelectMetaPageBody,
+  SelectMetaPageResponse,
   UpdateChannelBody,
   UpdateChannelParams,
   UpdateChannelResponse,
@@ -139,12 +150,31 @@ import {
   UpdateTemplateResponse,
   UpdateWorkspaceBody,
   UpdateWorkspaceResponse,
+  VerifyMetaChannelWebhookQueryParams,
 } from "@workspace/api-zod";
 import { canManageTeam, getAuth, requireAuth } from "../lib/auth";
 import { createSessionToken, hashPassword, hashSessionToken } from "../lib/security";
 import { enqueueSequenceRun, enrollMatchingSequences, isValidTimeZone, validateTriggerConfig } from "../lib/automation";
-import { executeAiRuntime, persistAiDryRunReply } from "../lib/ai-runtime";
-import { dispatchWorkspaceEvent, validateWebhookUrl } from "../lib/webhooks";
+import { executeAiRuntime, persistAiDryRunReply, persistAiLiveReply } from "../lib/ai-runtime";
+import { persistLiveOutboundMessage } from "../lib/meta-delivery";
+import {
+  finishMetaAuthorization,
+  consumeMetaPageSelection,
+  consumeMetaOAuthState,
+  exchangeMetaAuthorizationCode,
+  listMetaPageCandidates,
+  metaAuthorizationUrl,
+  metaClientConfiguration,
+  metaVerifyToken,
+  prepareMetaPageSelection,
+} from "../lib/meta";
+import {
+  dispatchWorkspaceEvent,
+  enqueueMetaWebhook,
+  processPendingMetaWebhookEvents,
+  validateWebhookUrl,
+  verifyMetaWebhookSignature,
+} from "../lib/webhooks";
 
 const router: IRouter = Router();
 
@@ -164,6 +194,8 @@ function leadPayload(lead: typeof leadsTable.$inferSelect) {
     value: lead.value,
     assignee: lead.assignee,
     tags: lead.tags,
+    messagingConsent: lead.messagingConsent,
+    optedOutAt: lead.optedOutAt ? iso(lead.optedOutAt) : null,
     createdAt: iso(lead.createdAt),
     updatedAt: iso(lead.updatedAt),
   };
@@ -189,7 +221,22 @@ function messagePayload(message: typeof messagesTable.$inferSelect) {
     direction: message.direction,
     sentAt: iso(message.sentAt),
     senderName: message.senderName,
+    deliveryStatus: message.deliveryStatus,
+    deliveryAttemptCount: message.deliveryAttemptCount,
+    deliveryError: message.deliveryError,
+    providerMessageId: message.providerMessageId,
+    deliveredAt: message.deliveredAt ? iso(message.deliveredAt) : null,
   };
+}
+
+function metaConfigurationReady(channel: typeof channelsTable.$inferSelect): boolean {
+  const common = Boolean(
+    process.env["META_APP_ID"]
+    && process.env["META_APP_SECRET"]
+    && process.env["META_REDIRECT_URI"]
+    && process.env["META_VERIFY_TOKEN"],
+  );
+  return common && (channel.mode !== "embedded_signup" || Boolean(process.env["META_WHATSAPP_CONFIG_ID"]));
 }
 
 function channelPayload(channel: typeof channelsTable.$inferSelect) {
@@ -201,6 +248,8 @@ function channelPayload(channel: typeof channelsTable.$inferSelect) {
     mode: channel.mode,
     accountName: channel.accountName,
     lastSyncedAt: channel.lastSyncedAt ? iso(channel.lastSyncedAt) : null,
+    externalAccountId: channel.externalAccountId,
+    configurationReady: metaConfigurationReady(channel),
   };
 }
 
@@ -321,6 +370,124 @@ function webhookPayload(webhook: typeof webhooksTable.$inferSelect) {
     createdAt: iso(webhook.createdAt),
   };
 }
+
+function metaPageSelectionHtml(
+  state: string,
+  pages: Array<{ id: string; name: string; instagramBusinessId?: string }>,
+): string {
+  const data = JSON.stringify({ state, pages }).replaceAll("<", "\\u003c");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Select Meta Page</title>
+<style>body{font-family:system-ui;background:#f4f7f9;margin:0;display:grid;place-items:center;min-height:100vh}.card{background:white;padding:28px;border:1px solid #dfe5e8;border-radius:12px;box-shadow:0 12px 35px #17304218;max-width:520px;width:calc(100% - 48px)}button{display:block;width:100%;padding:12px;margin-top:10px;text-align:left;border:1px solid #cad4da;border-radius:8px;background:white;cursor:pointer}button:hover{border-color:#22b768}p{color:#55636b}</style>
+</head><body><main class="card"><h1>Select a Meta Page</h1><p>Choose the Page this channel should use. Its Page access token will be stored encrypted.</p><div id="pages"></div><p id="error"></p></main>
+<script>const data=${data};const root=document.getElementById("pages");for(const page of data.pages){const button=document.createElement("button");button.textContent=page.name+(page.instagramBusinessId?" (Instagram connected)":"");button.onclick=async()=>{button.disabled=true;const response=await fetch(location.pathname.replace("/callback","/select"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({state:data.state,pageId:page.id})});if(response.ok){location.assign("/channels?connected=meta");return}const body=await response.json().catch(()=>({}));document.getElementById("error").textContent=body.error||"Unable to connect this Page.";button.disabled=false};root.appendChild(button)}</script></body></html>`;
+}
+
+router.get("/channels/meta/callback", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = CompleteMetaChannelConnectionQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const auth = getAuth(res);
+    const state = await consumeMetaOAuthState(parsed.data.state, auth.user.id, auth.workspace.id);
+    const [pendingChannel] = await db.select().from(channelsTable).where(and(
+      eq(channelsTable.id, state.channelId),
+      eq(channelsTable.workspaceId, state.workspaceId),
+    )).limit(1);
+    if (!pendingChannel || pendingChannel.type === "whatsapp") {
+      res.status(400).json({ error: "This OAuth callback is not valid for the selected channel." });
+      return;
+    }
+    const accessToken = await exchangeMetaAuthorizationCode(parsed.data.code);
+    const candidates = await listMetaPageCandidates(accessToken, pendingChannel.type);
+    if (!candidates.length) throw new Error("Meta did not return an eligible Page for this channel.");
+    if (candidates.length > 1) {
+      await prepareMetaPageSelection(state.transactionId, accessToken, candidates);
+      if (req.accepts("html")) {
+        res.type("html").send(metaPageSelectionHtml(parsed.data.state, candidates));
+        return;
+      }
+      res.status(409).json({ error: "Select a Meta Page in the browser to complete this connection." });
+      return;
+    }
+    const channel = await finishMetaAuthorization(state, "", undefined, {
+      userAccessToken: accessToken,
+      selectedPageId: candidates[0]!.id,
+    });
+    const payload = CompleteMetaChannelConnectionResponse.parse(channelPayload(channel));
+    if (req.accepts("html")) {
+      res.redirect(303, `/channels?connected=${encodeURIComponent(channel.type)}`);
+      return;
+    }
+    res.json(payload);
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "Unable to complete Meta authorization." });
+  }
+});
+
+router.post("/channels/meta/select", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = SelectMetaPageBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const auth = getAuth(res);
+    const selection = await consumeMetaPageSelection(
+      parsed.data.state,
+      auth.user.id,
+      auth.workspace.id,
+      parsed.data.pageId,
+    );
+    const channel = await finishMetaAuthorization(selection, "", undefined, {
+      userAccessToken: selection.accessToken,
+      selectedPageId: selection.pageId,
+    });
+    res.json(SelectMetaPageResponse.parse(channelPayload(channel)));
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "Unable to complete Meta Page selection." });
+  }
+});
+
+router.get("/channels/meta/webhook", (req: Request, res: Response): void => {
+  const parsed = VerifyMetaChannelWebhookQueryParams.safeParse(req.query);
+  let verifyToken = "";
+  try {
+    verifyToken = metaVerifyToken();
+  } catch {
+    res.status(503).json({ error: "Meta webhook configuration is incomplete." });
+    return;
+  }
+  if (!parsed.success
+    || parsed.data["hub.mode"] !== "subscribe"
+    || parsed.data["hub.verify_token"] !== verifyToken
+    || !parsed.data["hub.challenge"]) {
+    res.status(403).json({ error: "Meta webhook verification failed." });
+    return;
+  }
+  res.type("text/plain").send(parsed.data["hub.challenge"]);
+});
+
+router.post("/channels/meta/webhook", async (req: Request, res: Response): Promise<void> => {
+  const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+  if (!rawBody || !verifyMetaWebhookSignature(rawBody, req.get("x-hub-signature-256"))) {
+    res.status(401).json({ error: "Invalid Meta webhook signature." });
+    return;
+  }
+  const parsed = ReceiveMetaChannelWebhookBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  await enqueueMetaWebhook(parsed.data);
+  void processPendingMetaWebhookEvents().catch((error) => {
+    req.log?.error({ err: error }, "Meta webhook processing failed");
+  });
+  res.json(ReceiveMetaChannelWebhookResponse.parse({ received: true }));
+});
 
 router.use(requireAuth);
 
@@ -463,7 +630,12 @@ router.patch("/leads/:id", async (req: Request, res: Response): Promise<void> =>
   }
   const auth = getAuth(res);
   const [before] = await db.select().from(leadsTable).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.workspaceId, auth.workspace.id))).limit(1);
-  const [lead] = await db.update(leadsTable).set(parsed.data).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.workspaceId, auth.workspace.id))).returning();
+  const [lead] = await db.update(leadsTable).set({
+    ...parsed.data,
+    optedOutAt: parsed.data.messagingConsent === "opted_out"
+      ? before?.optedOutAt ?? new Date()
+      : parsed.data.messagingConsent ? null : undefined,
+  }).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.workspaceId, auth.workspace.id))).returning();
   if (!lead) {
     res.status(404).json({ error: "Lead not found." });
     return;
@@ -526,19 +698,17 @@ router.post("/inbox/conversations/:id/messages", async (req: Request, res: Respo
     res.status(404).json({ error: "Conversation not found." });
     return;
   }
-  const [message] = await db.insert(messagesTable).values({
-    workspaceId: auth.workspace.id,
-    conversationId: conversation.id,
-    body: parsed.data.body,
-    direction: "outbound",
-    senderName: auth.user.name,
-  }).returning();
-  await db.update(conversationsTable).set({ lastMessage: parsed.data.body, unread: 0, updatedAt: new Date() }).where(eq(conversationsTable.id, conversation.id));
-  if (!message) {
-    res.status(400).json({ error: "Unable to send message." });
-    return;
+  try {
+    const message = await persistLiveOutboundMessage(
+      auth.workspace.id,
+      conversation.id,
+      parsed.data.body,
+      auth.user.name,
+    );
+    res.status(201).json(SendMessageResponse.parse(messagePayload(message)));
+  } catch (error) {
+    res.status(409).json({ error: error instanceof Error ? error.message : "Unable to deliver message." });
   }
-  res.status(201).json(SendMessageResponse.parse(messagePayload(message)));
 });
 
 router.get("/team", async (_req: Request, res: Response): Promise<void> => {
@@ -627,6 +797,7 @@ router.get("/channels", async (_req: Request, res: Response): Promise<void> => {
 });
 
 router.patch("/channels/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
   const params = UpdateChannelParams.safeParse(req.params);
   const parsed = UpdateChannelBody.safeParse(req.body);
   if (!params.success) {
@@ -639,14 +810,85 @@ router.patch("/channels/:id", async (req: Request, res: Response): Promise<void>
   }
   const auth = getAuth(res);
   const [channel] = await db.update(channelsTable).set({
-    ...parsed.data,
-    lastSyncedAt: parsed.data.status === "connected" ? new Date() : undefined,
+    status: "not_configured",
+    accountName: parsed.data.accountName ?? null,
+    externalAccountId: null,
+    credentialsCiphertext: null,
+    lastSyncedAt: null,
   }).where(and(eq(channelsTable.id, params.data.id), eq(channelsTable.workspaceId, auth.workspace.id))).returning();
   if (!channel) {
     res.status(404).json({ error: "Channel not found." });
     return;
   }
   res.json(UpdateChannelResponse.parse(channelPayload(channel)));
+});
+
+router.get("/channels/:id/connect", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = ConnectChannelParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const [channel] = await db.select().from(channelsTable).where(and(
+    eq(channelsTable.id, params.data.id),
+    eq(channelsTable.workspaceId, auth.workspace.id),
+  )).limit(1);
+  if (!channel) {
+    res.status(404).json({ error: "Channel not found." });
+    return;
+  }
+  if (!metaConfigurationReady(channel)) {
+    res.status(400).json({ error: "Meta app secrets are not configured for this channel." });
+    return;
+  }
+  const mode = channel.mode === "embedded_signup" ? "embedded_signup" : "oauth";
+  const clientConfiguration = metaClientConfiguration();
+  const authorizationUrl = await metaAuthorizationUrl(auth.workspace.id, channel.id, auth.user.id, mode);
+  res.json(ConnectChannelResponse.parse({
+    authorizationUrl,
+    mode,
+    ...(mode === "embedded_signup" ? {
+      ...clientConfiguration,
+      state: new URL(authorizationUrl).searchParams.get("state") ?? undefined,
+    } : {}),
+  }));
+});
+
+router.post("/channels/:id/complete", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = CompleteEmbeddedChannelConnectionParams.safeParse(req.params);
+  const parsed = CompleteEmbeddedChannelConnectionBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid Embedded Signup completion." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [channel] = await db.select().from(channelsTable).where(and(
+    eq(channelsTable.id, params.data.id),
+    eq(channelsTable.workspaceId, auth.workspace.id),
+    eq(channelsTable.mode, "embedded_signup"),
+  )).limit(1);
+  if (!channel) {
+    res.status(404).json({ error: "WhatsApp channel not found." });
+    return;
+  }
+  try {
+    const state = await consumeMetaOAuthState(parsed.data.state, auth.user.id, auth.workspace.id);
+    if (state.channelId !== channel.id) {
+      res.status(400).json({ error: "Embedded Signup state does not match this channel." });
+      return;
+    }
+    const connected = await finishMetaAuthorization(
+      state,
+      parsed.data.code,
+      { wabaId: parsed.data.wabaId, phoneNumberId: parsed.data.phoneNumberId },
+    );
+    res.json(CompleteEmbeddedChannelConnectionResponse.parse(channelPayload(connected)));
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "Unable to complete Embedded Signup." });
+  }
 });
 
 router.get("/flows", async (_req: Request, res: Response): Promise<void> => {
@@ -884,12 +1126,25 @@ router.post("/ai-inbound-events", async (req: Request, res: Response): Promise<v
     eventKey: `inbound-message:${inboundMessage!.id}`,
   });
   if (result.status === "replied" && result.replyPreview) {
-    await persistAiDryRunReply(
-      auth.workspace.id,
-      conversation!.id,
-      result.replyPreview,
-      result.senderName,
-    );
+    const [channel] = await db.select().from(channelsTable).where(and(
+      eq(channelsTable.workspaceId, auth.workspace.id),
+      eq(channelsTable.type, parsed.data.channel),
+      eq(channelsTable.status, "connected"),
+    )).limit(1);
+    if (channel && conversation!.externalParticipantId) {
+      try {
+        await persistAiLiveReply(auth.workspace.id, conversation!.id, result.replyPreview, result.senderName);
+      } catch {
+        // The failed live attempt is retained on the message for operators to inspect.
+      }
+    } else {
+      await persistAiDryRunReply(
+        auth.workspace.id,
+        conversation!.id,
+        result.replyPreview,
+        result.senderName,
+      );
+    }
   }
   res.json(ProcessAiInboundEventResponse.parse({ ...result, conversationId: conversation!.id }));
 });

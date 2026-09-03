@@ -146,6 +146,15 @@ export const LeadStage = {
   lost: 'lost',
 } as const;
 
+export type LeadMessagingConsent = typeof LeadMessagingConsent[keyof typeof LeadMessagingConsent];
+
+
+export const LeadMessagingConsent = {
+  unknown: 'unknown',
+  opted_in: 'opted_in',
+  opted_out: 'opted_out',
+} as const;
+
 export interface Lead {
   id: string;
   name: string;
@@ -157,6 +166,9 @@ export interface Lead {
   value: number;
   assignee: string;
   tags?: string[];
+  messagingConsent: LeadMessagingConsent;
+  /** @nullable */
+  optedOutAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -228,6 +240,15 @@ export const LeadUpdateStage = {
   lost: 'lost',
 } as const;
 
+export type LeadUpdateMessagingConsent = typeof LeadUpdateMessagingConsent[keyof typeof LeadUpdateMessagingConsent];
+
+
+export const LeadUpdateMessagingConsent = {
+  unknown: 'unknown',
+  opted_in: 'opted_in',
+  opted_out: 'opted_out',
+} as const;
+
 export interface LeadUpdate {
   /**
      * @minLength 2
@@ -247,6 +268,7 @@ export interface LeadUpdate {
   assignee?: string;
   /** @items.maxLength 30 */
   tags?: string[];
+  messagingConsent?: LeadUpdateMessagingConsent;
 }
 
 export type ConversationChannel = typeof ConversationChannel[keyof typeof ConversationChannel];
@@ -277,6 +299,18 @@ export const MessageDirection = {
   outbound: 'outbound',
 } as const;
 
+export type MessageDeliveryStatus = typeof MessageDeliveryStatus[keyof typeof MessageDeliveryStatus];
+
+
+export const MessageDeliveryStatus = {
+  pending: 'pending',
+  sending: 'sending',
+  sent: 'sent',
+  delivered: 'delivered',
+  failed: 'failed',
+  delivery_disabled: 'delivery_disabled',
+} as const;
+
 export interface Message {
   id: string;
   conversationId: string;
@@ -284,6 +318,14 @@ export interface Message {
   direction: MessageDirection;
   sentAt: string;
   senderName?: string;
+  deliveryStatus: MessageDeliveryStatus;
+  deliveryAttemptCount: number;
+  /** @nullable */
+  deliveryError?: string | null;
+  /** @nullable */
+  providerMessageId?: string | null;
+  /** @nullable */
+  deliveredAt?: string | null;
 }
 
 export interface MessageInput {
@@ -1423,21 +1465,59 @@ export interface Channel {
   accountName?: string | null;
   /** @nullable */
   lastSyncedAt?: string | null;
+  /** @nullable */
+  externalAccountId?: string | null;
+  configurationReady: boolean;
 }
 
 export type ChannelUpdateStatus = typeof ChannelUpdateStatus[keyof typeof ChannelUpdateStatus];
 
 
 export const ChannelUpdateStatus = {
-  connected: 'connected',
   not_configured: 'not_configured',
-  error: 'error',
 } as const;
 
 export interface ChannelUpdate {
   status?: ChannelUpdateStatus;
   accountName?: string;
 }
+
+export type ChannelConnectResultMode = typeof ChannelConnectResultMode[keyof typeof ChannelConnectResultMode];
+
+
+export const ChannelConnectResultMode = {
+  embedded_signup: 'embedded_signup',
+  oauth: 'oauth',
+} as const;
+
+export interface ChannelConnectResult {
+  authorizationUrl: string;
+  mode: ChannelConnectResultMode;
+  appId?: string;
+  configId?: string;
+  graphVersion?: string;
+  state?: string;
+}
+
+export interface EmbeddedSignupCompletion {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 32 */
+  state: string;
+  /** @minLength 1 */
+  wabaId: string;
+  /** @minLength 1 */
+  phoneNumberId: string;
+}
+
+export interface MetaPageSelection {
+  /** @minLength 32 */
+  state: string;
+  /** @minLength 1 */
+  pageId: string;
+}
+
+export interface MetaWebhookPayload { [key: string]: unknown }
 
 /**
  * Invalid request
@@ -1477,6 +1557,21 @@ limit?: number;
 export type ListConversationsParams = {
 channel?: string;
 search?: string;
+};
+
+export type CompleteMetaChannelConnectionParams = {
+code: string;
+state: string;
+};
+
+export type VerifyMetaChannelWebhookParams = {
+'hub.mode'?: string;
+'hub.verify_token'?: string;
+'hub.challenge'?: string;
+};
+
+export type ReceiveMetaChannelWebhook200 = {
+  received: boolean;
 };
 
 export type ListAiMemoryItemsParams = {

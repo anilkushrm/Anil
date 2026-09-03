@@ -1,3 +1,4 @@
 - [Tenant auth lifecycle](tenant-auth-lifecycle.md) — Keep session cache, active membership checks, and one-time invitation activation in sync across API and navigation.
 - [Webhook egress safety](webhook-egress-safety.md) — Validate public DNS and pin outbound HTTPS sockets to that exact address to prevent DNS rebinding.
 - [Automation message direction](automation-message-direction.md) — Keep inbound CRM extraction separate from outbound generation, and persist dry-run outbound attempts for lifecycle automation.
+- [Meta channel delivery](meta-channel-delivery.md) — Queue signed events before ACK, resume retries after partial work, and bind only server-validated signup assets.

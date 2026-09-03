@@ -52,9 +52,15 @@ app.use(cors((req, callback) => {
   callback(allowed ? null : new Error("Origin is not allowed"), options);
 }));
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({
+  verify(req, _res, buffer) {
+    (req as RequestWithRawBody).rawBody = Buffer.from(buffer);
+  },
+}));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
 export default app;
+
+type RequestWithRawBody = express.Request & { rawBody?: Buffer };

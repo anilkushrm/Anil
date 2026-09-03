@@ -5,6 +5,7 @@
  * Ai Botflow CRM API
  * OpenAPI spec version: 0.1.0
  */
+import type { LeadUpdateMessagingConsent } from './leadUpdateMessagingConsent';
 import type { LeadUpdateSource } from './leadUpdateSource';
 import type { LeadUpdateStage } from './leadUpdateStage';
 
@@ -27,4 +28,5 @@ export interface LeadUpdate {
   assignee?: string;
   /** @items.maxLength 30 */
   tags?: string[];
+  messagingConsent?: LeadUpdateMessagingConsent;
 }

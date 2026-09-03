@@ -413,6 +413,150 @@ paths:
           $ref: "#/components/responses/NotFound"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /channels/{id}/connect:
+    get:
+      operationId: connectChannel
+      tags: [channels]
+      summary: Start Meta OAuth or WhatsApp Embedded Signup
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Meta authorization URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChannelConnectResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /channels/{id}/complete:
+    post:
+      operationId: completeEmbeddedChannelConnection
+      tags: [channels]
+      summary: Complete an authenticated WhatsApp Embedded Signup
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmbeddedSignupCompletion"
+      responses:
+        "200":
+          description: Connected channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /channels/meta/callback:
+    get:
+      operationId: completeMetaChannelConnection
+      tags: [channels]
+      summary: Complete Meta OAuth
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema: { type: string }
+        - name: state
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Connected channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /channels/meta/select:
+    post:
+      operationId: selectMetaPage
+      tags: [channels]
+      summary: Select the Page used by a pending Meta connection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaPageSelection"
+      responses:
+        "200":
+          description: Connected channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /channels/meta/webhook:
+    get:
+      operationId: verifyMetaChannelWebhook
+      tags: [channels]
+      summary: Verify the Meta webhook subscription
+      parameters:
+        - name: hub.mode
+          in: query
+          schema: { type: string }
+        - name: hub.verify_token
+          in: query
+          schema: { type: string }
+        - name: hub.challenge
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Webhook challenge
+          content:
+            text/plain:
+              schema: { type: string }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: receiveMetaChannelWebhook
+      tags: [channels]
+      summary: Receive Meta channel messages and delivery receipts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaWebhookPayload"
+      responses:
+        "200":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [received]
+                properties:
+                  received: { type: boolean }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /flows:
     get:
       operationId: listFlows
@@ -1196,7 +1340,7 @@ components:
         createdAt: { type: string, format: date-time }
     Lead:
       type: object
-      required: [id, name, company, email, phone, source, stage, value, assignee, createdAt, updatedAt]
+      required: [id, name, company, email, phone, source, stage, value, assignee, messagingConsent, createdAt, updatedAt]
       properties:
         id: { type: string }
         name: { type: string }
@@ -1210,6 +1354,9 @@ components:
         tags:
           type: array
           items: { type: string }
+        messagingConsent: { type: string, enum: [unknown, opted_in, opted_out] }
+        optedOutAt:
+          type: ["string", "null"]
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     LeadInput:
@@ -1241,6 +1388,7 @@ components:
         tags:
           type: array
           items: { type: string, maxLength: 30 }
+        messagingConsent: { type: string, enum: [unknown, opted_in, opted_out] }
     Conversation:
       type: object
       required: [id, contactName, channel, lastMessage, unread, updatedAt]
@@ -1255,7 +1403,7 @@ components:
           type: ["string", "null"]
     Message:
       type: object
-      required: [id, conversationId, body, direction, sentAt]
+      required: [id, conversationId, body, direction, sentAt, deliveryStatus, deliveryAttemptCount]
       properties:
         id: { type: string }
         conversationId: { type: string }
@@ -1263,6 +1411,14 @@ components:
         direction: { type: string, enum: [inbound, outbound] }
         sentAt: { type: string, format: date-time }
         senderName: { type: string }
+        deliveryStatus: { type: string, enum: [pending, sending, sent, delivered, failed, delivery_disabled] }
+        deliveryAttemptCount: { type: number }
+        deliveryError:
+          type: ["string", "null"]
+        providerMessageId:
+          type: ["string", "null"]
+        deliveredAt:
+          type: ["string", "null"]
     MessageInput:
       type: object
       required: [body]
@@ -1726,7 +1882,7 @@ components:
         createdAt: { type: string, format: date-time }
     Channel:
       type: object
-      required: [id, type, name, status, mode]
+      required: [id, type, name, status, mode, configurationReady]
       properties:
         id: { type: string }
         type: { type: string, enum: [whatsapp, instagram, facebook] }
@@ -1737,9 +1893,39 @@ components:
           type: ["string", "null"]
         lastSyncedAt:
           type: ["string", "null"]
+        externalAccountId:
+          type: ["string", "null"]
+        configurationReady: { type: boolean }
     ChannelUpdate:
       type: object
       properties:
-        status: { type: string, enum: [connected, not_configured, error] }
+        status: { type: string, enum: [not_configured] }
         accountName: { type: string }
+    ChannelConnectResult:
+      type: object
+      required: [authorizationUrl, mode]
+      properties:
+        authorizationUrl: { type: string }
+        mode: { type: string, enum: [embedded_signup, oauth] }
+        appId: { type: string }
+        configId: { type: string }
+        graphVersion: { type: string }
+        state: { type: string }
+    EmbeddedSignupCompletion:
+      type: object
+      required: [code, state, wabaId, phoneNumberId]
+      properties:
+        code: { type: string, minLength: 1 }
+        state: { type: string, minLength: 32 }
+        wabaId: { type: string, minLength: 1 }
+        phoneNumberId: { type: string, minLength: 1 }
+    MetaPageSelection:
+      type: object
+      required: [state, pageId]
+      properties:
+        state: { type: string, minLength: 32 }
+        pageId: { type: string, minLength: 1 }
+    MetaWebhookPayload:
+      type: object
+      additionalProperties: true
 

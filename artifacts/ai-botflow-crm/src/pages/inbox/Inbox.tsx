@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Send, Instagram, Facebook, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const channelIcon = {
   whatsapp: <MessageCircle className="h-4 w-4 text-green-500" />,
@@ -25,6 +26,7 @@ export default function Inbox() {
   const [reply, setReply] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: conversations = [], isLoading: loadingConvs } = useListConversations({ search });
   const messageQueryId = activeConvId ?? "";
@@ -54,7 +56,15 @@ export default function Inbox() {
         setReply("");
         queryClient.invalidateQueries({ queryKey: getListMessagesQueryKey(activeConvId) });
         queryClient.invalidateQueries({ queryKey: getListConversationsQueryKey({ search }) });
-      }
+      },
+      onError: (error) => {
+        queryClient.invalidateQueries({ queryKey: getListMessagesQueryKey(activeConvId) });
+        toast({
+          variant: "destructive",
+          title: "Message was not delivered",
+          description: error instanceof Error ? error.message : "The failed attempt remains in delivery history.",
+        });
+      },
     });
   };
 
@@ -149,7 +159,13 @@ export default function Inbox() {
                             isOutbound ? "text-primary-foreground" : "text-muted-foreground"
                           )}>
                             {new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {isOutbound ? ` · ${msg.deliveryStatus.replace("_", " ")}` : ""}
                           </div>
+                          {msg.deliveryError && (
+                            <div className="mt-1 text-[10px] text-left opacity-90">
+                              {msg.deliveryError}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )

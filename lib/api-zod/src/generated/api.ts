@@ -266,6 +266,8 @@ export const ListLeadsResponseItem = zod.object({
   "value": zod.number(),
   "assignee": zod.string(),
   "tags": zod.array(zod.string()).optional(),
+  "messagingConsent": zod.enum(['unknown', 'opted_in', 'opted_out']),
+  "optedOutAt": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -316,6 +318,8 @@ export const CreateLeadResponse = zod.object({
   "value": zod.number(),
   "assignee": zod.string(),
   "tags": zod.array(zod.string()).optional(),
+  "messagingConsent": zod.enum(['unknown', 'opted_in', 'opted_out']),
+  "optedOutAt": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -355,7 +359,8 @@ export const UpdateLeadBody = zod.object({
   "stage": zod.enum(['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']).optional(),
   "value": zod.number().min(updateLeadBodyValueMin).optional(),
   "assignee": zod.string().max(updateLeadBodyAssigneeMax).optional(),
-  "tags": zod.array(zod.string().max(updateLeadBodyTagsItemMax)).optional()
+  "tags": zod.array(zod.string().max(updateLeadBodyTagsItemMax)).optional(),
+  "messagingConsent": zod.enum(['unknown', 'opted_in', 'opted_out']).optional()
 })
 
 export const UpdateLeadResponse = zod.object({
@@ -369,6 +374,8 @@ export const UpdateLeadResponse = zod.object({
   "value": zod.number(),
   "assignee": zod.string(),
   "tags": zod.array(zod.string()).optional(),
+  "messagingConsent": zod.enum(['unknown', 'opted_in', 'opted_out']),
+  "optedOutAt": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -410,7 +417,12 @@ export const ListMessagesResponseItem = zod.object({
   "body": zod.string(),
   "direction": zod.enum(['inbound', 'outbound']),
   "sentAt": zod.coerce.date(),
-  "senderName": zod.string().optional()
+  "senderName": zod.string().optional(),
+  "deliveryStatus": zod.enum(['pending', 'sending', 'sent', 'delivered', 'failed', 'delivery_disabled']),
+  "deliveryAttemptCount": zod.number(),
+  "deliveryError": zod.string().nullish(),
+  "providerMessageId": zod.string().nullish(),
+  "deliveredAt": zod.string().nullish()
 })
 export const ListMessagesResponse = zod.array(ListMessagesResponseItem)
 
@@ -439,7 +451,12 @@ export const SendMessageResponse = zod.object({
   "body": zod.string(),
   "direction": zod.enum(['inbound', 'outbound']),
   "sentAt": zod.coerce.date(),
-  "senderName": zod.string().optional()
+  "senderName": zod.string().optional(),
+  "deliveryStatus": zod.enum(['pending', 'sending', 'sent', 'delivered', 'failed', 'delivery_disabled']),
+  "deliveryAttemptCount": zod.number(),
+  "deliveryError": zod.string().nullish(),
+  "providerMessageId": zod.string().nullish(),
+  "deliveredAt": zod.string().nullish()
 })
 
 
@@ -486,7 +503,9 @@ export const ListChannelsResponseItem = zod.object({
   "status": zod.enum(['connected', 'not_configured', 'error']),
   "mode": zod.enum(['embedded_signup', 'oauth', 'webhook']),
   "accountName": zod.string().nullish(),
-  "lastSyncedAt": zod.string().nullish()
+  "lastSyncedAt": zod.string().nullish(),
+  "externalAccountId": zod.string().nullish(),
+  "configurationReady": zod.boolean()
 })
 export const ListChannelsResponse = zod.array(ListChannelsResponseItem)
 
@@ -502,7 +521,7 @@ export const UpdateChannelParams = zod.object({
 })
 
 export const UpdateChannelBody = zod.object({
-  "status": zod.enum(['connected', 'not_configured', 'error']).optional(),
+  "status": zod.enum(['not_configured']).optional(),
   "accountName": zod.string().optional()
 })
 
@@ -513,7 +532,135 @@ export const UpdateChannelResponse = zod.object({
   "status": zod.enum(['connected', 'not_configured', 'error']),
   "mode": zod.enum(['embedded_signup', 'oauth', 'webhook']),
   "accountName": zod.string().nullish(),
-  "lastSyncedAt": zod.string().nullish()
+  "lastSyncedAt": zod.string().nullish(),
+  "externalAccountId": zod.string().nullish(),
+  "configurationReady": zod.boolean()
+})
+
+
+/**
+ * @summary Start Meta OAuth or WhatsApp Embedded Signup
+ */
+
+
+
+export const ConnectChannelParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const ConnectChannelResponse = zod.object({
+  "authorizationUrl": zod.string(),
+  "mode": zod.enum(['embedded_signup', 'oauth']),
+  "appId": zod.string().optional(),
+  "configId": zod.string().optional(),
+  "graphVersion": zod.string().optional(),
+  "state": zod.string().optional()
+})
+
+
+/**
+ * @summary Complete an authenticated WhatsApp Embedded Signup
+ */
+
+
+
+export const CompleteEmbeddedChannelConnectionParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+
+export const completeEmbeddedChannelConnectionBodyStateMin = 32;
+
+
+
+
+
+export const CompleteEmbeddedChannelConnectionBody = zod.object({
+  "code": zod.string().min(1),
+  "state": zod.string().min(completeEmbeddedChannelConnectionBodyStateMin),
+  "wabaId": zod.string().min(1),
+  "phoneNumberId": zod.string().min(1)
+})
+
+export const CompleteEmbeddedChannelConnectionResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "name": zod.string(),
+  "status": zod.enum(['connected', 'not_configured', 'error']),
+  "mode": zod.enum(['embedded_signup', 'oauth', 'webhook']),
+  "accountName": zod.string().nullish(),
+  "lastSyncedAt": zod.string().nullish(),
+  "externalAccountId": zod.string().nullish(),
+  "configurationReady": zod.boolean()
+})
+
+
+/**
+ * @summary Complete Meta OAuth
+ */
+export const CompleteMetaChannelConnectionQueryParams = zod.object({
+  "code": zod.coerce.string(),
+  "state": zod.coerce.string()
+})
+
+export const CompleteMetaChannelConnectionResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "name": zod.string(),
+  "status": zod.enum(['connected', 'not_configured', 'error']),
+  "mode": zod.enum(['embedded_signup', 'oauth', 'webhook']),
+  "accountName": zod.string().nullish(),
+  "lastSyncedAt": zod.string().nullish(),
+  "externalAccountId": zod.string().nullish(),
+  "configurationReady": zod.boolean()
+})
+
+
+/**
+ * @summary Select the Page used by a pending Meta connection
+ */
+export const selectMetaPageBodyStateMin = 32;
+
+
+
+
+export const SelectMetaPageBody = zod.object({
+  "state": zod.string().min(selectMetaPageBodyStateMin),
+  "pageId": zod.string().min(1)
+})
+
+export const SelectMetaPageResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "name": zod.string(),
+  "status": zod.enum(['connected', 'not_configured', 'error']),
+  "mode": zod.enum(['embedded_signup', 'oauth', 'webhook']),
+  "accountName": zod.string().nullish(),
+  "lastSyncedAt": zod.string().nullish(),
+  "externalAccountId": zod.string().nullish(),
+  "configurationReady": zod.boolean()
+})
+
+
+/**
+ * @summary Verify the Meta webhook subscription
+ */
+export const VerifyMetaChannelWebhookQueryParams = zod.object({
+  "hub.mode": zod.coerce.string().optional(),
+  "hub.verify_token": zod.coerce.string().optional(),
+  "hub.challenge": zod.coerce.string().optional()
+})
+
+export const VerifyMetaChannelWebhookResponse = zod.string()
+
+
+/**
+ * @summary Receive Meta channel messages and delivery receipts
+ */
+export const ReceiveMetaChannelWebhookBody = zod.record(zod.string(), zod.unknown())
+
+export const ReceiveMetaChannelWebhookResponse = zod.object({
+  "received": zod.boolean()
 })
 
 

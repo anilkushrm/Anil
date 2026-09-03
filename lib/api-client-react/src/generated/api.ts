@@ -41,10 +41,13 @@ import type {
   CampaignInput,
   CampaignUpdate,
   Channel,
+  ChannelConnectResult,
   ChannelUpdate,
+  CompleteMetaChannelConnectionParams,
   ConflictResponse,
   Conversation,
   Dashboard,
+  EmbeddedSignupCompletion,
   Flow,
   FlowInput,
   FlowUpdate,
@@ -65,8 +68,11 @@ import type {
   LoginInput,
   Message,
   MessageInput,
+  MetaPageSelection,
+  MetaWebhookPayload,
   NamedResourceInput,
   NotFoundResponse,
+  ReceiveMetaChannelWebhook200,
   RegisterInput,
   Sequence,
   SequenceEnrollmentInput,
@@ -83,6 +89,7 @@ import type {
   TemplateInput,
   TemplateUpdate,
   UnauthorizedResponse,
+  VerifyMetaChannelWebhookParams,
   Webhook,
   WebhookDelivery,
   WebhookInput,
@@ -1571,7 +1578,7 @@ export const updateChannel = async (id: string,
 
 
 
-export const getUpdateChannelMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
+export const getUpdateChannelMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateChannel>>, TError,{id: string;data: BodyType<ChannelUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateChannel>>, TError,{id: string;data: BodyType<ChannelUpdate>}, TContext> => {
 
@@ -1600,12 +1607,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateChannelMutationResult = NonNullable<Awaited<ReturnType<typeof updateChannel>>>
     export type UpdateChannelMutationBody = BodyType<ChannelUpdate>
-    export type UpdateChannelMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>
+    export type UpdateChannelMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
 
     /**
  * @summary Update channel setup state
  */
-export const useUpdateChannel = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
+export const useUpdateChannel = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateChannel>>, TError,{id: string;data: BodyType<ChannelUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof updateChannel>>,
@@ -1614,6 +1621,465 @@ export const useUpdateChannel = <TError = ErrorType<BadRequestResponse | Unautho
         TContext
       > => {
       return useMutation(getUpdateChannelMutationOptions(options));
+    }
+
+export const getConnectChannelUrl = (id: string,) => {
+
+
+
+
+  return `/api/channels/${id}/connect`
+}
+
+/**
+ * @summary Start Meta OAuth or WhatsApp Embedded Signup
+ */
+export const connectChannel = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<ChannelConnectResult> => {
+
+  return customFetch<ChannelConnectResult>(getConnectChannelUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConnectChannelQueryKey = (id: string,) => {
+    return [
+    `/api/channels/${id}/connect`
+    ] as const;
+    }
+
+
+export const getConnectChannelQueryOptions = <TData = Awaited<ReturnType<typeof connectChannel>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof connectChannel>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConnectChannelQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof connectChannel>>> = ({ signal }) => connectChannel(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof connectChannel>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ConnectChannelQueryResult = NonNullable<Awaited<ReturnType<typeof connectChannel>>>
+export type ConnectChannelQueryError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary Start Meta OAuth or WhatsApp Embedded Signup
+ */
+
+export function useConnectChannel<TData = Awaited<ReturnType<typeof connectChannel>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof connectChannel>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getConnectChannelQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCompleteEmbeddedChannelConnectionUrl = (id: string,) => {
+
+
+
+
+  return `/api/channels/${id}/complete`
+}
+
+/**
+ * @summary Complete an authenticated WhatsApp Embedded Signup
+ */
+export const completeEmbeddedChannelConnection = async (id: string,
+    embeddedSignupCompletion: EmbeddedSignupCompletion, options?: Parameters<typeof customFetch>[1]): Promise<Channel> => {
+
+  return customFetch<Channel>(getCompleteEmbeddedChannelConnectionUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(embeddedSignupCompletion)
+  }
+);}
+
+
+
+
+
+export const getCompleteEmbeddedChannelConnectionMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeEmbeddedChannelConnection>>, TError,{id: string;data: BodyType<EmbeddedSignupCompletion>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeEmbeddedChannelConnection>>, TError,{id: string;data: BodyType<EmbeddedSignupCompletion>}, TContext> => {
+
+const mutationKey = ['completeEmbeddedChannelConnection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeEmbeddedChannelConnection>>, {id: string;data: BodyType<EmbeddedSignupCompletion>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  completeEmbeddedChannelConnection(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteEmbeddedChannelConnectionMutationResult = NonNullable<Awaited<ReturnType<typeof completeEmbeddedChannelConnection>>>
+    export type CompleteEmbeddedChannelConnectionMutationBody = BodyType<EmbeddedSignupCompletion>
+    export type CompleteEmbeddedChannelConnectionMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+    /**
+ * @summary Complete an authenticated WhatsApp Embedded Signup
+ */
+export const useCompleteEmbeddedChannelConnection = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeEmbeddedChannelConnection>>, TError,{id: string;data: BodyType<EmbeddedSignupCompletion>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeEmbeddedChannelConnection>>,
+        TError,
+        {id: string;data: BodyType<EmbeddedSignupCompletion>},
+        TContext
+      > => {
+      return useMutation(getCompleteEmbeddedChannelConnectionMutationOptions(options));
+    }
+
+export const getCompleteMetaChannelConnectionUrl = (params: CompleteMetaChannelConnectionParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/channels/meta/callback?${stringifiedParams}` : `/api/channels/meta/callback`
+}
+
+/**
+ * @summary Complete Meta OAuth
+ */
+export const completeMetaChannelConnection = async (params: CompleteMetaChannelConnectionParams, options?: Parameters<typeof customFetch>[1]): Promise<Channel> => {
+
+  return customFetch<Channel>(getCompleteMetaChannelConnectionUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getCompleteMetaChannelConnectionQueryKey = (params?: CompleteMetaChannelConnectionParams,) => {
+    return [
+    `/api/channels/meta/callback`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getCompleteMetaChannelConnectionQueryOptions = <TData = Awaited<ReturnType<typeof completeMetaChannelConnection>>, TError = ErrorType<BadRequestResponse>>(params: CompleteMetaChannelConnectionParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof completeMetaChannelConnection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCompleteMetaChannelConnectionQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof completeMetaChannelConnection>>> = ({ signal }) => completeMetaChannelConnection(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof completeMetaChannelConnection>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type CompleteMetaChannelConnectionQueryResult = NonNullable<Awaited<ReturnType<typeof completeMetaChannelConnection>>>
+export type CompleteMetaChannelConnectionQueryError = ErrorType<BadRequestResponse>
+
+
+/**
+ * @summary Complete Meta OAuth
+ */
+
+export function useCompleteMetaChannelConnection<TData = Awaited<ReturnType<typeof completeMetaChannelConnection>>, TError = ErrorType<BadRequestResponse>>(
+ params: CompleteMetaChannelConnectionParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof completeMetaChannelConnection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getCompleteMetaChannelConnectionQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSelectMetaPageUrl = () => {
+
+
+
+
+  return `/api/channels/meta/select`
+}
+
+/**
+ * @summary Select the Page used by a pending Meta connection
+ */
+export const selectMetaPage = async (metaPageSelection: MetaPageSelection, options?: Parameters<typeof customFetch>[1]): Promise<Channel> => {
+
+  return customFetch<Channel>(getSelectMetaPageUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(metaPageSelection)
+  }
+);}
+
+
+
+
+
+export const getSelectMetaPageMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectMetaPage>>, TError,{data: BodyType<MetaPageSelection>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof selectMetaPage>>, TError,{data: BodyType<MetaPageSelection>}, TContext> => {
+
+const mutationKey = ['selectMetaPage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof selectMetaPage>>, {data: BodyType<MetaPageSelection>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  selectMetaPage(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SelectMetaPageMutationResult = NonNullable<Awaited<ReturnType<typeof selectMetaPage>>>
+    export type SelectMetaPageMutationBody = BodyType<MetaPageSelection>
+    export type SelectMetaPageMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>
+
+    /**
+ * @summary Select the Page used by a pending Meta connection
+ */
+export const useSelectMetaPage = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectMetaPage>>, TError,{data: BodyType<MetaPageSelection>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof selectMetaPage>>,
+        TError,
+        {data: BodyType<MetaPageSelection>},
+        TContext
+      > => {
+      return useMutation(getSelectMetaPageMutationOptions(options));
+    }
+
+export const getVerifyMetaChannelWebhookUrl = (params?: VerifyMetaChannelWebhookParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/channels/meta/webhook?${stringifiedParams}` : `/api/channels/meta/webhook`
+}
+
+/**
+ * @summary Verify the Meta webhook subscription
+ */
+export const verifyMetaChannelWebhook = async (params?: VerifyMetaChannelWebhookParams, options?: Parameters<typeof customFetch>[1]): Promise<string> => {
+
+  return customFetch<string>(getVerifyMetaChannelWebhookUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getVerifyMetaChannelWebhookQueryKey = (params?: VerifyMetaChannelWebhookParams,) => {
+    return [
+    `/api/channels/meta/webhook`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getVerifyMetaChannelWebhookQueryOptions = <TData = Awaited<ReturnType<typeof verifyMetaChannelWebhook>>, TError = ErrorType<ForbiddenResponse>>(params?: VerifyMetaChannelWebhookParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof verifyMetaChannelWebhook>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getVerifyMetaChannelWebhookQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof verifyMetaChannelWebhook>>> = ({ signal }) => verifyMetaChannelWebhook(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof verifyMetaChannelWebhook>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type VerifyMetaChannelWebhookQueryResult = NonNullable<Awaited<ReturnType<typeof verifyMetaChannelWebhook>>>
+export type VerifyMetaChannelWebhookQueryError = ErrorType<ForbiddenResponse>
+
+
+/**
+ * @summary Verify the Meta webhook subscription
+ */
+
+export function useVerifyMetaChannelWebhook<TData = Awaited<ReturnType<typeof verifyMetaChannelWebhook>>, TError = ErrorType<ForbiddenResponse>>(
+ params?: VerifyMetaChannelWebhookParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof verifyMetaChannelWebhook>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getVerifyMetaChannelWebhookQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getReceiveMetaChannelWebhookUrl = () => {
+
+
+
+
+  return `/api/channels/meta/webhook`
+}
+
+/**
+ * @summary Receive Meta channel messages and delivery receipts
+ */
+export const receiveMetaChannelWebhook = async (metaWebhookPayload: MetaWebhookPayload, options?: Parameters<typeof customFetch>[1]): Promise<ReceiveMetaChannelWebhook200> => {
+
+  return customFetch<ReceiveMetaChannelWebhook200>(getReceiveMetaChannelWebhookUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(metaWebhookPayload)
+  }
+);}
+
+
+
+
+
+export const getReceiveMetaChannelWebhookMutationOptions = <TError = ErrorType<UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof receiveMetaChannelWebhook>>, TError,{data: BodyType<MetaWebhookPayload>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof receiveMetaChannelWebhook>>, TError,{data: BodyType<MetaWebhookPayload>}, TContext> => {
+
+const mutationKey = ['receiveMetaChannelWebhook'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof receiveMetaChannelWebhook>>, {data: BodyType<MetaWebhookPayload>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  receiveMetaChannelWebhook(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReceiveMetaChannelWebhookMutationResult = NonNullable<Awaited<ReturnType<typeof receiveMetaChannelWebhook>>>
+    export type ReceiveMetaChannelWebhookMutationBody = BodyType<MetaWebhookPayload>
+    export type ReceiveMetaChannelWebhookMutationError = ErrorType<UnauthorizedResponse>
+
+    /**
+ * @summary Receive Meta channel messages and delivery receipts
+ */
+export const useReceiveMetaChannelWebhook = <TError = ErrorType<UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof receiveMetaChannelWebhook>>, TError,{data: BodyType<MetaWebhookPayload>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof receiveMetaChannelWebhook>>,
+        TError,
+        {data: BodyType<MetaWebhookPayload>},
+        TContext
+      > => {
+      return useMutation(getReceiveMetaChannelWebhookMutationOptions(options));
     }
 
 export const getListFlowsUrl = () => {

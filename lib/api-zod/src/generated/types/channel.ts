@@ -19,4 +19,7 @@ export interface Channel {
   accountName?: string | null;
   /** @nullable */
   lastSyncedAt?: string | null;
+  /** @nullable */
+  externalAccountId?: string | null;
+  configurationReady: boolean;
 }
