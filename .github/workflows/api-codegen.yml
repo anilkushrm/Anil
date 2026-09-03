@@ -1,0 +1,42 @@
+name: API codegen
+
+on:
+  pull_request:
+    paths:
+      - "lib/api-spec/**"
+      - "lib/api-client-react/src/generated/**"
+      - "lib/api-zod/src/generated/**"
+      - "scripts/check-api-generated.sh"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/api-codegen.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check generated API output
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check API code generation
+        run: pnpm run api-codegen:check
