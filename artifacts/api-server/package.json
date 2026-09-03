@@ -7,7 +7,7 @@
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc --build ../../lib/db ../../lib/api-zod && tsc -p tsconfig.json --noEmit",
     "test:ssrf": "node --experimental-strip-types --test src/lib/webhook-transport.test.ts",
     "test:meta": "esbuild src/lib/meta.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/meta.test.cjs --external:pg-native --external:pino-pretty && node --test /tmp/meta.test.cjs",
     "test:meta:integration": "esbuild src/lib/meta-delivery.integration.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/meta-delivery.integration.test.cjs --external:pg-native --external:pino-pretty && node --test /tmp/meta-delivery.integration.test.cjs",
