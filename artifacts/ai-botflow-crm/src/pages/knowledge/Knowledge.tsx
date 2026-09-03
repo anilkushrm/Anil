@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getListKnowledgeSourcesQueryKey, useCreateKnowledgeSource,
@@ -16,13 +16,28 @@ export default function Knowledge() {
   const deleteSource = useDeleteKnowledgeSource();
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "ready">("all");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [showEditor, setShowEditor] = useState(false);
   const [notice, setNotice] = useState("");
+  const fileInput = useRef<HTMLInputElement>(null);
   const refresh = () => queryClient.invalidateQueries({ queryKey: getListKnowledgeSourcesQueryKey() });
-  const filtered = useMemo(() => sources.filter((source) => `${source.title} ${source.content}`.toLowerCase().includes(query.toLowerCase())), [sources, query]);
+  const filtered = useMemo(() => sources.filter((source) => (statusFilter === "all" || source.status === "ready") && `${source.title} ${source.content}`.toLowerCase().includes(query.toLowerCase())), [sources, query, statusFilter]);
   const flash = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(""), 2400); };
+  const importFile = (file: File) => {
+    const supported = ["text/plain", "text/markdown", "text/csv", "application/json"].includes(file.type) || /\.(txt|md|csv|json)$/i.test(file.name);
+    if (!supported) {
+      flash("PDF/DOCX extraction is not connected yet; choose a text file or paste content.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const fileContent = String(reader.result ?? "").slice(0, 20000);
+      createSource.mutate({ data: { title: file.name.replace(/\.[^.]+$/, ""), content: fileContent } }, { onSuccess: () => { refresh(); flash(`${file.name} trained successfully`); } });
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <AppLayout title="AI Training & Knowledge" subtitle="Train your AI agent with verified business documents and answers.">
@@ -31,11 +46,12 @@ export default function Knowledge() {
           <div className="grid lg:grid-cols-[1.2fr_.8fr]">
             <div className="border-b border-slate-100 p-6 lg:border-b-0 lg:border-r">
               <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-600"><UploadCloud size={20} /></span><div><h2 className="font-display text-base font-extrabold text-slate-900">Add training content</h2><p className="mt-1 text-[11px] text-slate-400">Create verified text sources for your AI memory.</p></div></div>
-              <button onClick={() => setShowEditor(true)} className="mt-5 flex min-h-36 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 px-6 text-center transition hover:border-green-400 hover:bg-green-50/40">
+              <button onClick={() => fileInput.current?.click()} className="mt-5 flex min-h-36 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 px-6 text-center transition hover:border-green-400 hover:bg-green-50/40">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-green-600 shadow-sm"><Plus size={20} /></span>
-                <span className="mt-3 text-xs font-extrabold text-slate-700">Add verified knowledge source</span>
-                <span className="mt-1 max-w-sm text-[11px] leading-5 text-slate-400">Paste FAQs, product information, policy details, scripts, or document text.</span>
+                <span className="mt-3 text-xs font-extrabold text-slate-700">Drop a document or add verified content</span>
+                <span className="mt-1 max-w-sm text-[11px] leading-5 text-slate-400">Text, Markdown, CSV and JSON files train instantly. PDFs/DOCX can be added after extraction is connected.</span>
               </button>
+              <input ref={fileInput} type="file" className="hidden" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" onChange={(event) => { const file = event.target.files?.[0]; if (file) importFile(file); event.target.value = ""; }} />
             </div>
             <div className="bg-gradient-to-br from-[#17233a] to-[#223756] p-6 text-white">
               <Sparkles size={20} className="text-green-300" />
@@ -49,7 +65,7 @@ export default function Knowledge() {
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white panel-shadow">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
             <div><h2 className="font-display text-sm font-extrabold text-slate-900">Trained documents</h2><p className="mt-1 text-[11px] text-slate-400">Sources available to your AI agent</p></div>
-            <div className="flex gap-2"><label className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-400"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search documents" className="w-36 bg-transparent outline-none placeholder:text-slate-400" /></label><button className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-500"><Filter size={13} /> Filter</button></div>
+            <div className="flex gap-2"><label className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-400"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search documents" className="w-36 bg-transparent outline-none placeholder:text-slate-400" /></label><button onClick={() => setStatusFilter(statusFilter === "all" ? "ready" : "all")} className={`flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold ${statusFilter === "ready" ? "border-green-300 bg-green-50 text-green-700" : "border-slate-200 text-slate-500"}`}><Filter size={13} /> {statusFilter === "all" ? "Filter" : "Ready only"}</button></div>
           </div>
           <div className="divide-y divide-slate-100">
             {filtered.map((source, index) => (

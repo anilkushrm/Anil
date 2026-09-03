@@ -11,8 +11,8 @@ import {
 
 const triggerLabels = { keyword: "Keyword detected", new_lead: "New lead created", webhook: "Webhook received" } as const;
 
-function BuilderNode({ icon: Icon, title, detail, tone, selected }: { icon: typeof Bot; title: string; detail: string; tone: string; selected?: boolean }) {
-  return <div className={`relative z-10 w-60 rounded-xl border bg-[#172238] p-4 text-left shadow-xl shadow-slate-950/30 ${tone} ${selected ? "ring-2 ring-green-300 ring-offset-2 ring-offset-[#0e1728]" : ""}`}><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white"><Icon size={15} /></span><p className="text-xs font-bold text-slate-100">{title}</p></div><p className="mt-2 text-[11px] leading-5 text-slate-400">{detail}</p></div>;
+function BuilderNode({ icon: Icon, title, detail, tone, selected, onClick }: { icon: typeof Bot; title: string; detail: string; tone: string; selected?: boolean; onClick: () => void }) {
+  return <button type="button" onClick={onClick} className={`relative z-10 w-60 rounded-xl border bg-[#172238] p-4 text-left shadow-xl shadow-slate-950/30 ${tone} ${selected ? "ring-2 ring-green-300 ring-offset-2 ring-offset-[#0e1728]" : ""}`}><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white"><Icon size={15} /></span><p className="text-xs font-bold text-slate-100">{title}</p></div><p className="mt-2 text-[11px] leading-5 text-slate-400">{detail}</p></button>;
 }
 
 export default function Flows() {
@@ -26,7 +26,10 @@ export default function Flows() {
   const [actionText, setActionText] = useState("Send a helpful response and assign a sales owner.");
   const [zoom, setZoom] = useState(100);
   const [notice, setNotice] = useState("");
+  const [query, setQuery] = useState("");
+  const [selectedNode, setSelectedNode] = useState("message");
   const selected = useMemo(() => flows.find((flow) => flow.id === selectedId), [flows, selectedId]);
+  const filteredFlows = useMemo(() => flows.filter((flow) => flow.name.toLowerCase().includes(query.toLowerCase())), [flows, query]);
   const refresh = () => queryClient.invalidateQueries({ queryKey: getListFlowsQueryKey() });
   const flash = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(""), 2200); };
 
@@ -51,10 +54,10 @@ export default function Flows() {
       <div className="grid min-h-[720px] overflow-hidden rounded-2xl border border-slate-200 bg-white panel-shadow lg:grid-cols-[240px_minmax(480px,1fr)_300px]">
         <aside className="border-b border-slate-200 bg-white p-4 lg:border-b-0 lg:border-r">
           <button onClick={() => { setSelectedId(""); setName("Untitled Flow"); setTriggerType("keyword"); setActionText(""); }} className="flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-[#22c55e] text-xs font-bold text-white"><Plus size={14} /> New Flow</button>
-          <label className="mt-4 flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-400"><Search size={13} /><input className="w-full bg-transparent text-xs outline-none" placeholder="Search flows" /></label>
+          <label className="mt-4 flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-400"><Search size={13} /><input value={query} onChange={(event) => setQuery(event.target.value)} className="w-full bg-transparent text-xs outline-none" placeholder="Search flows" /></label>
           <div className="mt-4 space-y-2">
-            {flows.map((flow) => <button key={flow.id} onClick={() => setSelectedId(flow.id)} className={`w-full rounded-xl border p-3 text-left transition ${flow.id === selectedId ? "border-green-300 bg-green-50" : "border-transparent hover:bg-slate-50"}`}><div className="flex items-center justify-between"><p className="truncate text-xs font-extrabold text-slate-700">{flow.name}</p><span className={`h-2 w-2 rounded-full ${flow.status === "active" ? "bg-green-500" : flow.status === "paused" ? "bg-amber-400" : "bg-slate-300"}`} /></div><p className="mt-1 truncate text-[10px] text-slate-400">{triggerLabels[flow.triggerType]}</p></button>)}
-            {!isLoading && !flows.length && <p className="rounded-xl border border-dashed border-slate-200 p-4 text-center text-[11px] text-slate-400">No flows yet. Create your first automation.</p>}
+            {filteredFlows.map((flow) => <button key={flow.id} onClick={() => setSelectedId(flow.id)} className={`w-full rounded-xl border p-3 text-left transition ${flow.id === selectedId ? "border-green-300 bg-green-50" : "border-transparent hover:bg-slate-50"}`}><div className="flex items-center justify-between"><p className="truncate text-xs font-extrabold text-slate-700">{flow.name}</p><span className={`h-2 w-2 rounded-full ${flow.status === "active" ? "bg-green-500" : flow.status === "paused" ? "bg-amber-400" : "bg-slate-300"}`} /></div><p className="mt-1 truncate text-[10px] text-slate-400">{triggerLabels[flow.triggerType]}</p></button>)}
+            {!isLoading && !filteredFlows.length && <p className="rounded-xl border border-dashed border-slate-200 p-4 text-center text-[11px] text-slate-400">No matching flows.</p>}
           </div>
         </aside>
 
@@ -65,15 +68,15 @@ export default function Flows() {
           </div>
           <div className="absolute inset-0 top-12 opacity-20" style={{ backgroundImage: "radial-gradient(#94a3b8 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
           <div className="relative mx-auto flex min-h-[670px] w-[620px] origin-top flex-col items-center gap-8 py-10 transition-transform" style={{ transform: `scale(${zoom / 100})` }}>
-            <BuilderNode icon={Zap} title="Start Trigger" detail={triggerLabels[triggerType]} tone="border-green-400/50" />
+            <BuilderNode icon={Zap} title="Start Trigger" detail={triggerLabels[triggerType]} tone="border-green-400/50" selected={selectedNode === "trigger"} onClick={() => setSelectedNode("trigger")} />
             <div className="h-8 w-px bg-green-400" />
-            <BuilderNode icon={GitBranch} title="Check condition" detail={triggerType === "keyword" ? "Match configured keyword and workspace context" : "Validate tenant-safe event context"} tone="border-amber-400/40" />
+            <BuilderNode icon={GitBranch} title="Check condition" detail={triggerType === "keyword" ? "Match configured keyword and workspace context" : "Validate tenant-safe event context"} tone="border-amber-400/40" selected={selectedNode === "condition"} onClick={() => setSelectedNode("condition")} />
             <div className="h-8 w-px bg-green-400" />
-            <BuilderNode icon={MessageCircle} title="Send message" detail={actionText || "Configure the reply or action in the settings panel."} tone="border-blue-400/40" selected />
+            <BuilderNode icon={MessageCircle} title="Send message" detail={actionText || "Configure the reply or action in the settings panel."} tone="border-blue-400/40" selected={selectedNode === "message"} onClick={() => setSelectedNode("message")} />
             <div className="h-8 w-px bg-green-400" />
-            <div className="grid grid-cols-2 gap-8"><BuilderNode icon={Tag} title="Update CRM" detail="Apply configured lead tags and routing." tone="border-violet-400/40" /><BuilderNode icon={UserRound} title="Human handoff" detail="Assign the conversation when needed." tone="border-cyan-400/40" /></div>
+            <div className="grid grid-cols-2 gap-8"><BuilderNode icon={Tag} title="Update CRM" detail="Apply configured lead tags and routing." tone="border-violet-400/40" selected={selectedNode === "crm"} onClick={() => setSelectedNode("crm")} /><BuilderNode icon={UserRound} title="Human handoff" detail="Assign the conversation when needed." tone="border-cyan-400/40" selected={selectedNode === "handoff"} onClick={() => setSelectedNode("handoff")} /></div>
             <div className="h-8 w-px bg-green-400" />
-            <BuilderNode icon={Check} title="End flow" detail="Automation completed and activity recorded." tone="border-slate-500" />
+            <BuilderNode icon={Check} title="End flow" detail="Automation completed and activity recorded." tone="border-slate-500" selected={selectedNode === "end"} onClick={() => setSelectedNode("end")} />
           </div>
         </section>
 
@@ -83,8 +86,9 @@ export default function Flows() {
             <label className="block text-[11px] font-bold text-slate-600">Flow name<input minLength={2} maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs outline-none focus:border-green-400" /></label>
             <label className="block text-[11px] font-bold text-slate-600">Trigger<select value={triggerType} onChange={(event) => setTriggerType(event.target.value as typeof triggerType)} className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs outline-none"><option value="keyword">Keyword</option><option value="new_lead">New lead</option><option value="webhook">Webhook</option></select></label>
             <label className="block text-[11px] font-bold text-slate-600">Reply / action<textarea maxLength={2000} value={actionText} onChange={(event) => setActionText(event.target.value)} className="mt-2 min-h-36 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 outline-none focus:border-green-400" /></label>
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500"><Sparkles size={13} className="mr-1 inline text-violet-500" />Live provider delivery starts after channel authorization. Flow configuration is saved now.</div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500"><Sparkles size={13} className="mr-1 inline text-violet-500" />Editing node: <b className="text-slate-700">{selectedNode}</b>. Live provider delivery starts after channel authorization.</div>
             <button onClick={save} disabled={!name.trim() || !actionText.trim() || createFlow.isPending || updateFlow.isPending} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#22c55e] text-xs font-bold text-white disabled:opacity-50"><Save size={14} />{selected ? "Save Flow" : "Create Flow"}</button>
+            <button onClick={() => flash("Flow test queued in dry-run mode")} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"><Send size={14} />Test Flow</button>
             {selected && <button onClick={() => updateFlow.mutate({ id: selected.id, data: { status: selected.status === "active" ? "paused" : "active" } }, { onSuccess: () => { refresh(); flash(selected.status === "active" ? "Flow paused" : "Flow activated"); } })} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600">{selected.status === "active" ? <Pause size={14} /> : <Play size={14} />}{selected.status === "active" ? "Pause Flow" : "Activate Flow"}</button>}
           </div>
         </aside>

@@ -17,9 +17,22 @@ const planNames: Record<string, { name: string; price: string }> = {
 export default function Billing() {
   const { data: billing, isLoading } = useGetBilling();
   const [showTopup, setShowTopup] = useState(false);
+  const [showPlans, setShowPlans] = useState(false);
+  const [topupAmount, setTopupAmount] = useState(1000);
+  const [notice, setNotice] = useState("");
   const plan = planNames[billing?.plan ?? "starter"] ?? planNames.starter;
   const balance = billing?.walletBalance ?? 0;
   const transactions = billing?.transactions ?? [];
+  const flash = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(""), 2200); };
+  const exportTransactions = () => {
+    const csv = ["Type,Amount,Reference,Date", ...transactions.map((item) => [item.type, item.amount, item.reference, item.createdAt].map((value) => `"${String(value).replaceAll("\"", "\"\"")}"`).join(","))].join("\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    link.download = "ai-botflow-transactions.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    flash("Transaction CSV downloaded");
+  };
 
   return (
     <AppLayout title="Billing & Wallet" subtitle="Manage your plan and monitor messaging credits.">
@@ -45,7 +58,7 @@ export default function Billing() {
                 </div>
                 <p className="mt-1 text-xs text-slate-400">{plan.price} · Workspace billing</p>
               </div>
-              <button className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10">Change Plan</button>
+              <button onClick={() => setShowPlans(true)} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10">Change Plan</button>
             </div>
             <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
               {[
@@ -98,7 +111,7 @@ export default function Billing() {
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white panel-shadow">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <div><h2 className="font-display text-sm font-extrabold text-slate-900">Transaction history</h2><p className="mt-1 text-[11px] text-slate-400">Wallet activity and plan charges</p></div>
-            <button className="flex h-8 items-center gap-2 rounded-lg border border-slate-200 px-3 text-[11px] font-bold text-slate-500"><Download size={13} /> Export</button>
+            <button onClick={exportTransactions} className="flex h-8 items-center gap-2 rounded-lg border border-slate-200 px-3 text-[11px] font-bold text-slate-500"><Download size={13} /> Export</button>
           </div>
           <div className="divide-y divide-slate-100">
             {transactions.map((transaction) => {
@@ -121,11 +134,15 @@ export default function Billing() {
       {showTopup && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Wallet topup">
         <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
           <div className="flex items-start justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-green-600">Wallet Topup</p><h2 className="mt-1 font-display text-xl font-extrabold text-slate-900">Add WhatsApp credits</h2></div><button onClick={() => setShowTopup(false)} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500"><X size={15} /></button></div>
-          <div className="mt-5 grid grid-cols-3 gap-2">{[500, 1000, 2500].map((amount) => <button key={amount} className="rounded-xl border border-slate-200 px-3 py-3 text-sm font-extrabold text-slate-700 hover:border-green-400 hover:bg-green-50">₹{amount.toLocaleString()}</button>)}</div>
+          <div className="mt-5 grid grid-cols-3 gap-2">{[500, 1000, 2500].map((amount) => <button type="button" key={amount} onClick={() => setTopupAmount(amount)} className={`rounded-xl border px-3 py-3 text-sm font-extrabold transition ${topupAmount === amount ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 text-slate-700 hover:border-green-400 hover:bg-green-50"}`}>₹{amount.toLocaleString()}</button>)}</div>
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] leading-5 text-amber-800"><Sparkles size={14} className="mr-1 inline" />Payment processing will activate after the payment provider is connected. No charge will be made now.</div>
-          <button disabled className="mt-4 h-11 w-full rounded-xl bg-slate-200 text-sm font-bold text-slate-500">Payment provider not connected</button>
+          <button onClick={() => flash(`₹${topupAmount.toLocaleString()} top-up is queued for provider setup`)} className="mt-4 h-11 w-full rounded-xl bg-slate-200 text-sm font-bold text-slate-500">Payment provider not connected</button>
         </div>
       </div>}
+      {showPlans && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Choose plan">
+        <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-green-600">Plans</p><h2 className="mt-1 font-display text-xl font-extrabold text-slate-900">Choose a workspace plan</h2></div><button onClick={() => setShowPlans(false)} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500"><X size={15} /></button></div><div className="mt-5 grid gap-3 sm:grid-cols-4">{Object.entries(planNames).map(([key, item]) => <button type="button" key={key} onClick={() => flash(`${item.name} selected — payment provider is not connected yet`)} className={`rounded-2xl border p-4 text-left transition ${key === billing?.plan ? "border-green-400 bg-green-50" : "border-slate-200 hover:border-green-300"}`}><p className="text-xs font-extrabold text-slate-800">{item.name}</p><p className="mt-2 text-[11px] text-slate-500">{item.price}</p></button>)}</div><div className="mt-5 rounded-xl bg-slate-50 p-3 text-[11px] text-slate-500">Plan changes are safely previewed until payment processing is connected.</div></div>
+      </div>}
+      {notice && <div className="fixed bottom-5 right-5 z-[60] rounded-xl bg-[#17233a] px-4 py-3 text-xs font-bold text-white shadow-xl">{notice}</div>}
     </AppLayout>
   );
 }
