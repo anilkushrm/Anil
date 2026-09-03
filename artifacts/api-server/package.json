@@ -12,7 +12,7 @@
     "test:meta": "esbuild src/lib/meta.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/meta.test.cjs --external:pg-native --external:pino-pretty && node --test /tmp/meta.test.cjs",
     "test:meta:integration": "esbuild src/lib/meta-delivery.integration.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/meta-delivery.integration.test.cjs --external:pg-native --external:pino-pretty && node --test /tmp/meta-delivery.integration.test.cjs",
     "test:automation": "node --experimental-strip-types --test src/lib/automation.test.ts",
-    "test:automation:integration": "esbuild src/lib/automation.integration.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/automation-integration.test.cjs --external:pg-native --external:pino-pretty && node --test /tmp/automation-integration.test.cjs"
+    "test:automation:integration": "esbuild src/lib/automation.integration.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/automation-integration.test.cjs --external:pg-native --external:pino-pretty && NODE_ENV=production node --test /tmp/automation-integration.test.cjs"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

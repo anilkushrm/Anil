@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { once } from "node:events";
 import test from "node:test";
 import { and, eq } from "drizzle-orm";
 import {
@@ -11,13 +12,18 @@ import {
   db,
   leadsTable,
   messagesTable,
+  membershipsTable,
   sequenceRunsTable,
   sequenceStepsTable,
   sequencesTable,
+  sessionsTable,
+  usersTable,
   workspacesTable,
 } from "@workspace/db";
 import { enqueueSequenceRun, processRun, scanNoReplyTriggers } from "./automation";
 import { executeAiRuntime, persistAiDryRunReply } from "./ai-runtime";
+import { createSessionToken, hashSessionToken } from "./security";
+import app from "../app";
 
 test("sequence runs are workspace-scoped, idempotent, and advance to completion", async () => {
   const workspaceNames = [`Automation Test ${crypto.randomUUID()}`, `Automation Test ${crypto.randomUUID()}`];
@@ -270,6 +276,97 @@ test("sequence runs are workspace-scoped, idempotent, and advance to completion"
   } finally {
     for (const workspaceId of createdWorkspaces) {
       await db.delete(workspacesTable).where(eq(workspacesTable.id, workspaceId));
+    }
+  }
+});
+
+test("authenticated AI inbound route persists one dry-run reply without self-triggering", async () => {
+  let workspace: typeof workspacesTable.$inferSelect | undefined;
+  let user: typeof usersTable.$inferSelect | undefined;
+  let server: ReturnType<typeof app.listen> | undefined;
+  try {
+    [workspace] = await db.insert(workspacesTable).values({
+      name: `AI Inbound Route Test ${crypto.randomUUID()}`,
+      slug: `ai-inbound-route-test-${crypto.randomUUID()}`,
+    }).returning();
+    [user] = await db.insert(usersTable).values({
+      name: "AI Route Test User",
+      email: `ai-inbound-route-${crypto.randomUUID()}@example.com`,
+      passwordHash: "test-only",
+    }).returning();
+    assert.ok(workspace && user);
+
+    const sessionToken = createSessionToken();
+    await db.insert(membershipsTable).values({
+      workspaceId: workspace.id,
+      userId: user.id,
+      role: "owner",
+      status: "active",
+    });
+    await db.insert(sessionsTable).values({
+      tokenHash: hashSessionToken(sessionToken),
+      userId: user.id,
+      workspaceId: workspace.id,
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    const [contact] = await db.insert(contactsTable).values({
+      workspaceId: workspace.id,
+      name: "WhatsApp Route Lead",
+      phone: "+15550000000",
+    }).returning();
+    const [lead] = await db.insert(leadsTable).values({
+      workspaceId: workspace.id,
+      contactId: contact!.id,
+      name: "WhatsApp Route Lead",
+      assignee: "Unassigned",
+    }).returning();
+    assert.ok(contact && lead);
+
+    server = app.listen(0);
+    await once(server, "listening");
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/ai-inbound-events`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: `abcrm_session=${sessionToken}`,
+      },
+      body: JSON.stringify({
+        leadId: lead.id,
+        channel: "whatsapp",
+        text: "I would like to learn more about your plans.",
+      }),
+    });
+    assert.equal(response.status, 200);
+    const result = await response.json() as { status: string; replyPreview: string; conversationId: string };
+    assert.equal(result.status, "replied");
+    assert.ok(result.replyPreview.trim().length > 0);
+
+    const persistedMessages = await db.select().from(messagesTable).where(and(
+      eq(messagesTable.workspaceId, workspace.id),
+      eq(messagesTable.conversationId, result.conversationId),
+    ));
+    const inboundMessages = persistedMessages.filter((message) => message.direction === "inbound");
+    const outboundMessages = persistedMessages.filter((message) => message.direction === "outbound");
+    assert.equal(inboundMessages.length, 1);
+    assert.equal(outboundMessages.length, 1);
+    assert.equal(outboundMessages[0]?.deliveryStatus, "delivery_disabled");
+    assert.equal(outboundMessages[0]?.body, result.replyPreview);
+    assert.equal(persistedMessages.length, 2);
+  } finally {
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server!.close((error) => error ? reject(error) : resolve());
+      });
+    }
+    if (workspace) {
+      await db.delete(workspacesTable).where(eq(workspacesTable.id, workspace.id));
+    }
+    if (user) {
+      await db.delete(usersTable).where(eq(usersTable.id, user.id));
     }
   }
 });
