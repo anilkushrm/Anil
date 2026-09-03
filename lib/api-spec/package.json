@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "codegen": "orval --config ./orval.config.ts && pnpm -w run typecheck:libs",
-    "codegen:check": "orval --config ./orval.config.ts && sh ../../scripts/check-api-generated.sh",
+    "codegen:check": "orval --config ./orval.config.ts && pnpm run test:codegen-check && sh ../../scripts/check-api-generated.sh",
     "test:codegen-check": "sh ./test/codegen-check.sh"
   },
   "devDependencies": {
