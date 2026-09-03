@@ -3,6 +3,10 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 import {
   activitiesTable,
+  aiAgentSettingsTable,
+  aiMappingsTable,
+  aiMemoryItemsTable,
+  aiRulesTable,
   apiKeysTable,
   billingTransactionsTable,
   campaignsTable,
@@ -16,6 +20,9 @@ import {
   leadsTable,
   membershipsTable,
   messagesTable,
+  sequenceRunsTable,
+  sequenceStepsTable,
+  sequencesTable,
   templatesTable,
   usersTable,
   webhookDeliveriesTable,
@@ -23,6 +30,12 @@ import {
   workspacesTable,
 } from "@workspace/db";
 import {
+  CreateAiMappingBody,
+  CreateAiMappingResponse,
+  CreateAiMemoryItemBody,
+  CreateAiMemoryItemResponse,
+  CreateAiRuleBody,
+  CreateAiRuleResponse,
   CreateApiKeyBody,
   CreateApiKeyResponse,
   CreateCampaignBody,
@@ -33,13 +46,59 @@ import {
   CreateKnowledgeSourceResponse,
   CreateLeadBody,
   CreateLeadResponse,
+  CreateSequenceBody,
+  CreateSequenceResponse,
+  CreateSequenceStepBody,
+  CreateSequenceStepParams,
+  CreateSequenceStepResponse,
   CreateTemplateBody,
   CreateTemplateResponse,
   CreateWebhookBody,
   CreateWebhookResponse,
+  DeleteAiMappingParams,
+  DeleteAiMemoryItemParams,
+  DeleteAiRuleParams,
   DeleteKnowledgeSourceParams,
+  DeleteSequenceParams,
+  DeleteSequenceStepParams,
+  DuplicateSequenceParams,
+  DuplicateSequenceResponse,
+  EnrollSequenceBody,
+  EnrollSequenceParams,
+  EnrollSequenceResponse,
   DeleteWebhookParams,
+  GetAiSettingsResponse,
   GetBillingResponse,
+  GetSequenceParams,
+  GetSequenceResponse,
+  ListAiMappingsResponse,
+  ListAiMemoryItemsQueryParams,
+  ListAiMemoryItemsResponse,
+  ListAiRulesResponse,
+  ListSequenceRunsResponse,
+  ListSequencesResponse,
+  ProcessAiInboundEventBody,
+  ProcessAiInboundEventResponse,
+  UpdateAiMappingBody,
+  UpdateAiMappingParams,
+  UpdateAiMappingResponse,
+  UpdateAiMemoryItemBody,
+  UpdateAiMemoryItemParams,
+  UpdateAiMemoryItemResponse,
+  UpdateAiRuleBody,
+  UpdateAiRuleParams,
+  UpdateAiRuleResponse,
+  UpdateAiSettingsBody,
+  UpdateAiSettingsResponse,
+  UpdateSequenceBody,
+  UpdateSequenceParams,
+  UpdateSequenceResponse,
+  UpdateSequenceRunBody,
+  UpdateSequenceRunParams,
+  UpdateSequenceRunResponse,
+  UpdateSequenceStepBody,
+  UpdateSequenceStepParams,
+  UpdateSequenceStepResponse,
   GetDashboardResponse,
   GetWorkspaceResponse,
   InviteTeamMemberBody,
@@ -83,6 +142,8 @@ import {
 } from "@workspace/api-zod";
 import { canManageTeam, getAuth, requireAuth } from "../lib/auth";
 import { createSessionToken, hashPassword, hashSessionToken } from "../lib/security";
+import { enqueueSequenceRun, enrollMatchingSequences, isValidTimeZone, validateTriggerConfig } from "../lib/automation";
+import { executeAiRuntime, persistAiDryRunReply } from "../lib/ai-runtime";
 import { dispatchWorkspaceEvent, validateWebhookUrl } from "../lib/webhooks";
 
 const router: IRouter = Router();
@@ -157,6 +218,88 @@ function campaignPayload(campaign: typeof campaignsTable.$inferSelect) {
 
 function knowledgePayload(source: typeof knowledgeSourcesTable.$inferSelect) {
   return { ...source, createdAt: iso(source.createdAt), updatedAt: iso(source.updatedAt), workspaceId: undefined };
+}
+
+function aiSettingsPayload(settings: typeof aiAgentSettingsTable.$inferSelect) {
+  return { ...settings, workspaceId: undefined, updatedAt: iso(settings.updatedAt) };
+}
+
+function aiMemoryPayload(item: typeof aiMemoryItemsTable.$inferSelect) {
+  return { ...item, workspaceId: undefined, createdAt: iso(item.createdAt), updatedAt: iso(item.updatedAt) };
+}
+
+function aiMappingPayload(item: typeof aiMappingsTable.$inferSelect) {
+  return { ...item, workspaceId: undefined, createdAt: iso(item.createdAt), updatedAt: iso(item.updatedAt) };
+}
+
+function aiRulePayload(item: typeof aiRulesTable.$inferSelect) {
+  return { ...item, workspaceId: undefined, createdAt: iso(item.createdAt), updatedAt: iso(item.updatedAt) };
+}
+
+function sequenceStepPayload(step: typeof sequenceStepsTable.$inferSelect) {
+  return {
+    id: step.id,
+    position: step.position,
+    type: step.type,
+    title: step.title,
+    delayMinutes: step.delayMinutes,
+    channel: step.channel,
+    message: step.message,
+    quickReplies: step.quickReplies,
+    fallbackAction: step.fallbackAction,
+    exitOnReply: step.exitOnReply,
+    exitOnUnsubscribe: step.exitOnUnsubscribe,
+    createdAt: iso(step.createdAt),
+    updatedAt: iso(step.updatedAt),
+  };
+}
+
+function sequencePayload(sequence: typeof sequencesTable.$inferSelect, steps: (typeof sequenceStepsTable.$inferSelect)[]) {
+  return {
+    id: sequence.id,
+    name: sequence.name,
+    status: sequence.status,
+    triggerType: sequence.triggerType,
+    triggerConfig: sequence.triggerConfig,
+    timezone: sequence.timezone,
+    quietHoursStart: sequence.quietHoursStart,
+    quietHoursEnd: sequence.quietHoursEnd,
+    steps: steps.sort((a, b) => a.position - b.position).map(sequenceStepPayload),
+    createdAt: iso(sequence.createdAt),
+    updatedAt: iso(sequence.updatedAt),
+  };
+}
+
+function sequenceRunPayload(run: typeof sequenceRunsTable.$inferSelect) {
+  return {
+    id: run.id,
+    sequenceId: run.sequenceId,
+    leadId: run.leadId,
+    status: run.status,
+    currentStep: run.currentStep,
+    nextRunAt: run.nextRunAt ? iso(run.nextRunAt) : null,
+    attemptCount: run.attemptCount,
+    lastError: run.lastError,
+    idempotencyKey: run.idempotencyKey,
+    createdAt: iso(run.createdAt),
+    updatedAt: iso(run.updatedAt),
+  };
+}
+
+function requireAutomationManager(res: Response): boolean {
+  if (canManageTeam(getAuth(res))) return true;
+  res.status(403).json({ error: "Only workspace owners and admins can change AI automation settings." });
+  return false;
+}
+
+async function loadSequence(workspaceId: string, sequenceId: string) {
+  const [sequence] = await db.select().from(sequencesTable)
+    .where(and(eq(sequencesTable.id, sequenceId), eq(sequencesTable.workspaceId, workspaceId))).limit(1);
+  if (!sequence) return null;
+  const steps = await db.select().from(sequenceStepsTable)
+    .where(and(eq(sequenceStepsTable.sequenceId, sequence.id), eq(sequenceStepsTable.workspaceId, workspaceId)))
+    .orderBy(sequenceStepsTable.position);
+  return sequencePayload(sequence, steps);
 }
 
 function apiKeyPayload(apiKey: typeof apiKeysTable.$inferSelect) {
@@ -300,6 +443,10 @@ router.post("/leads", async (req: Request, res: Response): Promise<void> => {
     return;
   }
   void dispatchWorkspaceEvent(auth.workspace.id, "lead.created", leadPayload(lead));
+  void enrollMatchingSequences(auth.workspace.id, lead.id, "new_lead", {
+    source: lead.source,
+    eventKey: `lead-created:${lead.id}`,
+  });
   res.status(201).json(CreateLeadResponse.parse(leadPayload(lead)));
 });
 
@@ -315,10 +462,17 @@ router.patch("/leads/:id", async (req: Request, res: Response): Promise<void> =>
     return;
   }
   const auth = getAuth(res);
+  const [before] = await db.select().from(leadsTable).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.workspaceId, auth.workspace.id))).limit(1);
   const [lead] = await db.update(leadsTable).set(parsed.data).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.workspaceId, auth.workspace.id))).returning();
   if (!lead) {
     res.status(404).json({ error: "Lead not found." });
     return;
+  }
+  if (parsed.data.stage && parsed.data.stage !== before?.stage) {
+    void enrollMatchingSequences(auth.workspace.id, lead.id, "stage_changed", {
+      stage: lead.stage,
+      eventKey: `stage:${lead.id}:${lead.stage}:${lead.updatedAt.getTime()}`,
+    });
   }
   res.json(UpdateLeadResponse.parse(leadPayload(lead)));
 });
@@ -629,6 +783,638 @@ router.delete("/knowledge/:id", async (req: Request, res: Response): Promise<voi
     return;
   }
   res.status(204).send();
+});
+
+router.get("/ai-settings", async (_req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(res);
+  let [settings] = await db.select().from(aiAgentSettingsTable)
+    .where(eq(aiAgentSettingsTable.workspaceId, auth.workspace.id)).limit(1);
+  if (!settings) {
+    await db.insert(aiAgentSettingsTable).values({
+      workspaceId: auth.workspace.id,
+      companyName: auth.workspace.name,
+    }).onConflictDoNothing();
+    [settings] = await db.select().from(aiAgentSettingsTable)
+      .where(eq(aiAgentSettingsTable.workspaceId, auth.workspace.id)).limit(1);
+  }
+  res.json(GetAiSettingsResponse.parse(aiSettingsPayload(settings!)));
+});
+
+router.patch("/ai-settings", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = UpdateAiSettingsBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const [settings] = await db.insert(aiAgentSettingsTable).values({
+    workspaceId: auth.workspace.id,
+    companyName: auth.workspace.name,
+    ...parsed.data,
+  }).onConflictDoUpdate({
+    target: aiAgentSettingsTable.workspaceId,
+    set: { ...parsed.data, updatedAt: new Date() },
+  }).returning();
+  await db.insert(activitiesTable).values({
+    workspaceId: auth.workspace.id,
+    title: "AI agent settings updated",
+    detail: `${auth.user.name} saved the AI agent and memory configuration.`,
+  });
+  res.json(UpdateAiSettingsResponse.parse(aiSettingsPayload(settings!)));
+});
+
+router.post("/ai-inbound-events", async (req: Request, res: Response): Promise<void> => {
+  const parsed = ProcessAiInboundEventBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const [lead] = await db.select().from(leadsTable).where(and(
+    eq(leadsTable.id, parsed.data.leadId),
+    eq(leadsTable.workspaceId, auth.workspace.id),
+  )).limit(1);
+  if (!lead) {
+    res.status(404).json({ error: "Lead not found." });
+    return;
+  }
+  let conversation = parsed.data.conversationId
+    ? (await db.select().from(conversationsTable).where(and(
+        eq(conversationsTable.id, parsed.data.conversationId),
+        eq(conversationsTable.workspaceId, auth.workspace.id),
+        eq(conversationsTable.leadId, lead.id),
+      )).limit(1))[0]
+    : (await db.select().from(conversationsTable).where(and(
+        eq(conversationsTable.workspaceId, auth.workspace.id),
+        eq(conversationsTable.leadId, lead.id),
+        eq(conversationsTable.channel, parsed.data.channel),
+      )).limit(1))[0];
+  if (parsed.data.conversationId && !conversation) {
+    res.status(404).json({ error: "Conversation not found for this lead." });
+    return;
+  }
+  if (!conversation) {
+    [conversation] = await db.insert(conversationsTable).values({
+      workspaceId: auth.workspace.id,
+      leadId: lead.id,
+      contactName: lead.name,
+      channel: parsed.data.channel,
+      lastMessage: parsed.data.text,
+      unread: 1,
+    }).returning();
+  } else {
+    [conversation] = await db.update(conversationsTable).set({
+      lastMessage: parsed.data.text,
+      unread: conversation.unread + 1,
+    }).where(and(
+      eq(conversationsTable.id, conversation.id),
+      eq(conversationsTable.workspaceId, auth.workspace.id),
+    )).returning();
+  }
+  const [inboundMessage] = await db.insert(messagesTable).values({
+    workspaceId: auth.workspace.id,
+    conversationId: conversation!.id,
+    body: parsed.data.text,
+    direction: "inbound",
+    senderName: lead.name,
+  }).returning();
+  const result = await executeAiRuntime(auth.workspace.id, lead.id, parsed.data.text, {
+    conversationId: conversation!.id,
+    eventKey: `inbound-message:${inboundMessage!.id}`,
+  });
+  if (result.status === "replied" && result.replyPreview) {
+    await persistAiDryRunReply(
+      auth.workspace.id,
+      conversation!.id,
+      result.replyPreview,
+      result.senderName,
+    );
+  }
+  res.json(ProcessAiInboundEventResponse.parse({ ...result, conversationId: conversation!.id }));
+});
+
+router.get("/ai-memory", async (req: Request, res: Response): Promise<void> => {
+  const parsed = ListAiMemoryItemsQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const filters = [eq(aiMemoryItemsTable.workspaceId, auth.workspace.id)];
+  if (parsed.data.kind) filters.push(eq(aiMemoryItemsTable.kind, parsed.data.kind));
+  if (parsed.data.search) {
+    const search = `%${parsed.data.search}%`;
+    filters.push(or(ilike(aiMemoryItemsTable.title, search), ilike(aiMemoryItemsTable.content, search))!);
+  }
+  const items = await db.select().from(aiMemoryItemsTable)
+    .where(and(...filters)).orderBy(desc(aiMemoryItemsTable.updatedAt));
+  res.json(ListAiMemoryItemsResponse.parse(items.map(aiMemoryPayload)));
+});
+
+router.post("/ai-memory", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = CreateAiMemoryItemBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const [item] = await db.insert(aiMemoryItemsTable).values({
+    workspaceId: auth.workspace.id,
+    ...parsed.data,
+    price: parsed.data.price ?? "",
+    tags: parsed.data.tags ?? [],
+    status: parsed.data.status ?? "active",
+  }).returning();
+  res.status(201).json(CreateAiMemoryItemResponse.parse(aiMemoryPayload(item!)));
+});
+
+router.patch("/ai-memory/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = UpdateAiMemoryItemParams.safeParse(req.params);
+  const parsed = UpdateAiMemoryItemBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid memory item update." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [item] = await db.update(aiMemoryItemsTable).set(parsed.data)
+    .where(and(eq(aiMemoryItemsTable.id, params.data.id), eq(aiMemoryItemsTable.workspaceId, auth.workspace.id))).returning();
+  if (!item) {
+    res.status(404).json({ error: "Memory item not found." });
+    return;
+  }
+  res.json(UpdateAiMemoryItemResponse.parse(aiMemoryPayload(item)));
+});
+
+router.delete("/ai-memory/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = DeleteAiMemoryItemParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Memory item not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const deleted = await db.delete(aiMemoryItemsTable)
+    .where(and(eq(aiMemoryItemsTable.id, params.data.id), eq(aiMemoryItemsTable.workspaceId, auth.workspace.id)))
+    .returning({ id: aiMemoryItemsTable.id });
+  if (!deleted.length) {
+    res.status(404).json({ error: "Memory item not found." });
+    return;
+  }
+  res.status(204).send();
+});
+
+router.get("/ai-mappings", async (_req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(res);
+  const items = await db.select().from(aiMappingsTable)
+    .where(eq(aiMappingsTable.workspaceId, auth.workspace.id)).orderBy(aiMappingsTable.createdAt);
+  res.json(ListAiMappingsResponse.parse(items.map(aiMappingPayload)));
+});
+
+router.post("/ai-mappings", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = CreateAiMappingBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const [item] = await db.insert(aiMappingsTable).values({
+    workspaceId: auth.workspace.id,
+    ...parsed.data,
+    status: parsed.data.status ?? "active",
+  }).returning();
+  res.status(201).json(CreateAiMappingResponse.parse(aiMappingPayload(item!)));
+});
+
+router.patch("/ai-mappings/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = UpdateAiMappingParams.safeParse(req.params);
+  const parsed = UpdateAiMappingBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid mapping update." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [item] = await db.update(aiMappingsTable).set(parsed.data)
+    .where(and(eq(aiMappingsTable.id, params.data.id), eq(aiMappingsTable.workspaceId, auth.workspace.id))).returning();
+  if (!item) {
+    res.status(404).json({ error: "Mapping not found." });
+    return;
+  }
+  res.json(UpdateAiMappingResponse.parse(aiMappingPayload(item)));
+});
+
+router.delete("/ai-mappings/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = DeleteAiMappingParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Mapping not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const deleted = await db.delete(aiMappingsTable)
+    .where(and(eq(aiMappingsTable.id, params.data.id), eq(aiMappingsTable.workspaceId, auth.workspace.id)))
+    .returning({ id: aiMappingsTable.id });
+  if (!deleted.length) {
+    res.status(404).json({ error: "Mapping not found." });
+    return;
+  }
+  res.status(204).send();
+});
+
+router.get("/ai-rules", async (_req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(res);
+  const items = await db.select().from(aiRulesTable)
+    .where(eq(aiRulesTable.workspaceId, auth.workspace.id)).orderBy(aiRulesTable.createdAt);
+  res.json(ListAiRulesResponse.parse(items.map(aiRulePayload)));
+});
+
+router.post("/ai-rules", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = CreateAiRuleBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const auth = getAuth(res);
+  const [item] = await db.insert(aiRulesTable).values({
+    workspaceId: auth.workspace.id,
+    ...parsed.data,
+    status: parsed.data.status ?? "active",
+  }).returning();
+  res.status(201).json(CreateAiRuleResponse.parse(aiRulePayload(item!)));
+});
+
+router.patch("/ai-rules/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = UpdateAiRuleParams.safeParse(req.params);
+  const parsed = UpdateAiRuleBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid rule update." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [item] = await db.update(aiRulesTable).set(parsed.data)
+    .where(and(eq(aiRulesTable.id, params.data.id), eq(aiRulesTable.workspaceId, auth.workspace.id))).returning();
+  if (!item) {
+    res.status(404).json({ error: "Rule not found." });
+    return;
+  }
+  res.json(UpdateAiRuleResponse.parse(aiRulePayload(item)));
+});
+
+router.delete("/ai-rules/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = DeleteAiRuleParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Rule not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const deleted = await db.delete(aiRulesTable)
+    .where(and(eq(aiRulesTable.id, params.data.id), eq(aiRulesTable.workspaceId, auth.workspace.id)))
+    .returning({ id: aiRulesTable.id });
+  if (!deleted.length) {
+    res.status(404).json({ error: "Rule not found." });
+    return;
+  }
+  res.status(204).send();
+});
+
+router.get("/sequences", async (_req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(res);
+  const sequences = await db.select().from(sequencesTable)
+    .where(eq(sequencesTable.workspaceId, auth.workspace.id)).orderBy(desc(sequencesTable.updatedAt));
+  const steps = await db.select().from(sequenceStepsTable)
+    .where(eq(sequenceStepsTable.workspaceId, auth.workspace.id)).orderBy(sequenceStepsTable.position);
+  res.json(ListSequencesResponse.parse(sequences.map((sequence) =>
+    sequencePayload(sequence, steps.filter((step) => step.sequenceId === sequence.id)))));
+});
+
+router.post("/sequences", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const parsed = CreateSequenceBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  if (parsed.data.timezone && !isValidTimeZone(parsed.data.timezone)) {
+    res.status(400).json({ error: "Timezone must be a valid IANA timezone, for example Asia/Kolkata." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [sequence] = await db.insert(sequencesTable).values({
+    workspaceId: auth.workspace.id,
+    createdByUserId: auth.user.id,
+    name: parsed.data.name,
+    triggerType: parsed.data.triggerType ?? "manual",
+    triggerConfig: parsed.data.triggerConfig ?? "",
+    timezone: parsed.data.timezone ?? "Asia/Kolkata",
+    quietHoursStart: parsed.data.quietHoursStart ?? "21:00",
+    quietHoursEnd: parsed.data.quietHoursEnd ?? "09:00",
+  }).returning();
+  res.status(201).json(CreateSequenceResponse.parse(sequencePayload(sequence!, [])));
+});
+
+router.get("/sequences/:id", async (req: Request, res: Response): Promise<void> => {
+  const params = GetSequenceParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const sequence = await loadSequence(auth.workspace.id, params.data.id);
+  if (!sequence) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  res.json(GetSequenceResponse.parse(sequence));
+});
+
+router.patch("/sequences/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = UpdateSequenceParams.safeParse(req.params);
+  const parsed = UpdateSequenceBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid sequence update." });
+    return;
+  }
+  const auth = getAuth(res);
+  if (parsed.data.timezone && !isValidTimeZone(parsed.data.timezone)) {
+    res.status(400).json({ error: "Timezone must be a valid IANA timezone, for example Asia/Kolkata." });
+    return;
+  }
+  if (parsed.data.status === "active") {
+    const steps = await db.select({ id: sequenceStepsTable.id }).from(sequenceStepsTable)
+      .where(and(eq(sequenceStepsTable.sequenceId, params.data.id), eq(sequenceStepsTable.workspaceId, auth.workspace.id)));
+    if (!steps.length) {
+      res.status(400).json({ error: "Add at least one step before activating a sequence." });
+      return;
+    }
+    const triggerType = parsed.data.triggerType ?? (await db.select({ triggerType: sequencesTable.triggerType, triggerConfig: sequencesTable.triggerConfig }).from(sequencesTable)
+      .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id))).limit(1))[0]?.triggerType ?? "manual";
+    const triggerConfig = parsed.data.triggerConfig ?? (await db.select({ triggerConfig: sequencesTable.triggerConfig }).from(sequencesTable)
+      .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id))).limit(1))[0]?.triggerConfig ?? "";
+    const triggerError = validateTriggerConfig(triggerType, triggerConfig);
+    if (triggerError) {
+      res.status(400).json({ error: triggerError });
+      return;
+    }
+    const timezone = parsed.data.timezone ?? (await db.select({ timezone: sequencesTable.timezone }).from(sequencesTable)
+      .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id))).limit(1))[0]?.timezone ?? "";
+    if (!isValidTimeZone(timezone)) {
+      res.status(400).json({ error: "Sequence has an invalid IANA timezone." });
+      return;
+    }
+  }
+  const [updated] = await db.update(sequencesTable).set(parsed.data)
+    .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id))).returning();
+  if (!updated) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  const sequence = await loadSequence(auth.workspace.id, updated.id);
+  await db.insert(activitiesTable).values({
+    workspaceId: auth.workspace.id,
+    title: `Sequence ${updated.status}`,
+    detail: `${auth.user.name} updated ${updated.name}.`,
+  });
+  res.json(UpdateSequenceResponse.parse(sequence!));
+});
+
+router.delete("/sequences/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = DeleteSequenceParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const deleted = await db.delete(sequencesTable)
+    .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id)))
+    .returning({ id: sequencesTable.id });
+  if (!deleted.length) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  res.status(204).send();
+});
+
+router.post("/sequences/:id/duplicate", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = DuplicateSequenceParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [source] = await db.select().from(sequencesTable)
+    .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id))).limit(1);
+  if (!source) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  const sourceSteps = await db.select().from(sequenceStepsTable)
+    .where(and(eq(sequenceStepsTable.sequenceId, source.id), eq(sequenceStepsTable.workspaceId, auth.workspace.id)));
+  const copy = await db.transaction(async (tx) => {
+    const [sequence] = await tx.insert(sequencesTable).values({
+      workspaceId: auth.workspace.id,
+      createdByUserId: auth.user.id,
+      name: `${source.name} Copy`,
+      status: "draft",
+      triggerType: source.triggerType,
+      triggerConfig: source.triggerConfig,
+      timezone: source.timezone,
+      quietHoursStart: source.quietHoursStart,
+      quietHoursEnd: source.quietHoursEnd,
+    }).returning();
+    const copiedSteps = sourceSteps.length ? await tx.insert(sequenceStepsTable).values(sourceSteps.map((step) => ({
+      workspaceId: auth.workspace.id,
+      sequenceId: sequence!.id,
+      position: step.position,
+      type: step.type,
+      title: step.title,
+      delayMinutes: step.delayMinutes,
+      channel: step.channel,
+      message: step.message,
+      quickReplies: step.quickReplies,
+      fallbackAction: step.fallbackAction,
+      exitOnReply: step.exitOnReply,
+      exitOnUnsubscribe: step.exitOnUnsubscribe,
+    }))).returning() : [];
+    return sequencePayload(sequence!, copiedSteps);
+  });
+  res.status(201).json(DuplicateSequenceResponse.parse(copy));
+});
+
+router.post("/sequences/:id/steps", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = CreateSequenceStepParams.safeParse(req.params);
+  const parsed = CreateSequenceStepBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid sequence step." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [sequence] = await db.select({ id: sequencesTable.id }).from(sequencesTable)
+    .where(and(eq(sequencesTable.id, params.data.id), eq(sequencesTable.workspaceId, auth.workspace.id))).limit(1);
+  if (!sequence) {
+    res.status(404).json({ error: "Sequence not found." });
+    return;
+  }
+  let position = parsed.data.position;
+  if (position === undefined) {
+    const existing = await db.select({ position: sequenceStepsTable.position }).from(sequenceStepsTable)
+      .where(and(eq(sequenceStepsTable.sequenceId, sequence.id), eq(sequenceStepsTable.workspaceId, auth.workspace.id)))
+      .orderBy(desc(sequenceStepsTable.position)).limit(1);
+    position = (existing[0]?.position ?? -1) + 1;
+  }
+  const [step] = await db.insert(sequenceStepsTable).values({
+    workspaceId: auth.workspace.id,
+    sequenceId: sequence.id,
+    position,
+    type: parsed.data.type,
+    title: parsed.data.title,
+    delayMinutes: parsed.data.delayMinutes ?? 0,
+    channel: parsed.data.channel ?? "whatsapp",
+    message: parsed.data.message ?? "",
+    quickReplies: parsed.data.quickReplies ?? [],
+    fallbackAction: parsed.data.fallbackAction ?? "retry",
+    exitOnReply: parsed.data.exitOnReply ?? true,
+    exitOnUnsubscribe: parsed.data.exitOnUnsubscribe ?? true,
+  }).returning();
+  res.status(201).json(CreateSequenceStepResponse.parse(sequenceStepPayload(step!)));
+});
+
+router.patch("/sequence-steps/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = UpdateSequenceStepParams.safeParse(req.params);
+  const parsed = UpdateSequenceStepBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid sequence step update." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [current] = await db.select().from(sequenceStepsTable)
+    .where(and(eq(sequenceStepsTable.id, params.data.id), eq(sequenceStepsTable.workspaceId, auth.workspace.id))).limit(1);
+  if (!current) {
+    res.status(404).json({ error: "Sequence step not found." });
+    return;
+  }
+  const [step] = await db.transaction(async (tx) => {
+    if (parsed.data.position !== undefined && parsed.data.position !== current.position) {
+      await tx.update(sequenceStepsTable).set({ position: current.position }).where(and(
+        eq(sequenceStepsTable.workspaceId, auth.workspace.id),
+        eq(sequenceStepsTable.sequenceId, current.sequenceId),
+        eq(sequenceStepsTable.position, parsed.data.position),
+      ));
+    }
+    return tx.update(sequenceStepsTable).set(parsed.data)
+      .where(and(eq(sequenceStepsTable.id, params.data.id), eq(sequenceStepsTable.workspaceId, auth.workspace.id))).returning();
+  });
+  if (!step) {
+    res.status(404).json({ error: "Sequence step not found." });
+    return;
+  }
+  res.json(UpdateSequenceStepResponse.parse(sequenceStepPayload(step)));
+});
+
+router.delete("/sequence-steps/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = DeleteSequenceStepParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(404).json({ error: "Sequence step not found." });
+    return;
+  }
+  const auth = getAuth(res);
+  const deleted = await db.delete(sequenceStepsTable)
+    .where(and(eq(sequenceStepsTable.id, params.data.id), eq(sequenceStepsTable.workspaceId, auth.workspace.id)))
+    .returning({ id: sequenceStepsTable.id });
+  if (!deleted.length) {
+    res.status(404).json({ error: "Sequence step not found." });
+    return;
+  }
+  res.status(204).send();
+});
+
+router.post("/sequences/:id/enroll", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = EnrollSequenceParams.safeParse(req.params);
+  const parsed = EnrollSequenceBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid sequence enrollment." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [[sequence], [lead]] = await Promise.all([
+    db.select().from(sequencesTable).where(and(
+      eq(sequencesTable.id, params.data.id),
+      eq(sequencesTable.workspaceId, auth.workspace.id),
+    )).limit(1),
+    db.select({ id: leadsTable.id }).from(leadsTable).where(and(
+      eq(leadsTable.id, parsed.data.leadId),
+      eq(leadsTable.workspaceId, auth.workspace.id),
+    )).limit(1),
+  ]);
+  if (!sequence || !lead) {
+    res.status(404).json({ error: "Active sequence or lead not found." });
+    return;
+  }
+  if (sequence.status !== "active") {
+    res.status(409).json({ error: "Only active sequences can enroll leads." });
+    return;
+  }
+  try {
+    const [run] = await enqueueSequenceRun(sequence, lead.id, parsed.data.idempotencyKey);
+    if (!run) {
+      res.status(409).json({ error: "This enrollment request was already processed." });
+      return;
+    }
+    await db.insert(activitiesTable).values({
+      workspaceId: auth.workspace.id,
+      title: "Lead enrolled in sequence",
+      detail: `${auth.user.name} enrolled a lead in ${sequence.name}.`,
+    });
+    res.status(201).json(EnrollSequenceResponse.parse(sequenceRunPayload(run!)));
+  } catch (error) {
+    if ((error as { code?: string }).code === "23505") {
+      res.status(409).json({ error: "This enrollment request was already processed." });
+      return;
+    }
+    throw error;
+  }
+});
+
+router.get("/sequence-runs", async (_req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(res);
+  const runs = await db.select().from(sequenceRunsTable)
+    .where(eq(sequenceRunsTable.workspaceId, auth.workspace.id))
+    .orderBy(desc(sequenceRunsTable.updatedAt)).limit(100);
+  res.json(ListSequenceRunsResponse.parse(runs.map(sequenceRunPayload)));
+});
+
+router.patch("/sequence-runs/:id", async (req: Request, res: Response): Promise<void> => {
+  if (!requireAutomationManager(res)) return;
+  const params = UpdateSequenceRunParams.safeParse(req.params);
+  const parsed = UpdateSequenceRunBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Invalid sequence run update." });
+    return;
+  }
+  const auth = getAuth(res);
+  const [run] = await db.update(sequenceRunsTable).set({
+    status: parsed.data.status,
+    nextRunAt: parsed.data.status === "scheduled" ? new Date() : undefined,
+    lastError: parsed.data.status === "scheduled" ? null : undefined,
+  }).where(and(eq(sequenceRunsTable.id, params.data.id), eq(sequenceRunsTable.workspaceId, auth.workspace.id))).returning();
+  if (!run) {
+    res.status(404).json({ error: "Sequence run not found." });
+    return;
+  }
+  res.json(UpdateSequenceRunResponse.parse(sequenceRunPayload(run)));
 });
 
 router.get("/billing", async (_req: Request, res: Response): Promise<void> => {

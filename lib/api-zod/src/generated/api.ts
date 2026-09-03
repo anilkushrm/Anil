@@ -760,6 +760,828 @@ export const DeleteKnowledgeSourceParams = zod.object({
 export const DeleteKnowledgeSourceResponse = zod.void()
 
 
+export const GetAiSettingsResponse = zod.object({
+  "id": zod.string(),
+  "provider": zod.enum(['openai', 'gemini', 'custom']),
+  "model": zod.string(),
+  "temperature": zod.number(),
+  "maxTokens": zod.number(),
+  "prompt": zod.string(),
+  "botName": zod.string(),
+  "companyName": zod.string(),
+  "companyTagline": zod.string(),
+  "industry": zod.string(),
+  "contactEmail": zod.string(),
+  "supportPhone": zod.string(),
+  "officeAddress": zod.string(),
+  "replyAll": zod.boolean(),
+  "onlyUnassigned": zod.boolean(),
+  "outsideBusinessHours": zod.boolean(),
+  "keywordOnly": zod.boolean(),
+  "stopOnHuman": zod.boolean(),
+  "rememberContext": zod.boolean(),
+  "useConversationHistory": zod.boolean(),
+  "autoUpdateContact": zod.boolean(),
+  "rememberOptOut": zod.boolean(),
+  "retentionDays": zod.number(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const updateAiSettingsBodyModelMax = 100;
+
+export const updateAiSettingsBodyTemperatureMin = 0;
+export const updateAiSettingsBodyTemperatureMax = 2;
+
+export const updateAiSettingsBodyMaxTokensMin = 50;
+export const updateAiSettingsBodyMaxTokensMax = 8000;
+
+export const updateAiSettingsBodyPromptMax = 4000;
+
+export const updateAiSettingsBodyBotNameMin = 2;
+export const updateAiSettingsBodyBotNameMax = 100;
+
+export const updateAiSettingsBodyCompanyNameMax = 120;
+
+export const updateAiSettingsBodyCompanyTaglineMax = 200;
+
+export const updateAiSettingsBodyIndustryMax = 100;
+
+export const updateAiSettingsBodyContactEmailMax = 200;
+
+export const updateAiSettingsBodySupportPhoneMax = 50;
+
+export const updateAiSettingsBodyOfficeAddressMax = 500;
+
+export const updateAiSettingsBodyRetentionDaysMin = 0;
+export const updateAiSettingsBodyRetentionDaysMax = 3650;
+
+
+
+export const UpdateAiSettingsBody = zod.object({
+  "provider": zod.enum(['openai', 'gemini', 'custom']).optional(),
+  "model": zod.string().min(1).max(updateAiSettingsBodyModelMax).optional(),
+  "temperature": zod.number().min(updateAiSettingsBodyTemperatureMin).max(updateAiSettingsBodyTemperatureMax).optional(),
+  "maxTokens": zod.number().min(updateAiSettingsBodyMaxTokensMin).max(updateAiSettingsBodyMaxTokensMax).optional(),
+  "prompt": zod.string().min(1).max(updateAiSettingsBodyPromptMax).optional(),
+  "botName": zod.string().min(updateAiSettingsBodyBotNameMin).max(updateAiSettingsBodyBotNameMax).optional(),
+  "companyName": zod.string().max(updateAiSettingsBodyCompanyNameMax).optional(),
+  "companyTagline": zod.string().max(updateAiSettingsBodyCompanyTaglineMax).optional(),
+  "industry": zod.string().max(updateAiSettingsBodyIndustryMax).optional(),
+  "contactEmail": zod.string().max(updateAiSettingsBodyContactEmailMax).optional(),
+  "supportPhone": zod.string().max(updateAiSettingsBodySupportPhoneMax).optional(),
+  "officeAddress": zod.string().max(updateAiSettingsBodyOfficeAddressMax).optional(),
+  "replyAll": zod.boolean().optional(),
+  "onlyUnassigned": zod.boolean().optional(),
+  "outsideBusinessHours": zod.boolean().optional(),
+  "keywordOnly": zod.boolean().optional(),
+  "stopOnHuman": zod.boolean().optional(),
+  "rememberContext": zod.boolean().optional(),
+  "useConversationHistory": zod.boolean().optional(),
+  "autoUpdateContact": zod.boolean().optional(),
+  "rememberOptOut": zod.boolean().optional(),
+  "retentionDays": zod.number().min(updateAiSettingsBodyRetentionDaysMin).max(updateAiSettingsBodyRetentionDaysMax).optional()
+})
+
+export const UpdateAiSettingsResponse = zod.object({
+  "id": zod.string(),
+  "provider": zod.enum(['openai', 'gemini', 'custom']),
+  "model": zod.string(),
+  "temperature": zod.number(),
+  "maxTokens": zod.number(),
+  "prompt": zod.string(),
+  "botName": zod.string(),
+  "companyName": zod.string(),
+  "companyTagline": zod.string(),
+  "industry": zod.string(),
+  "contactEmail": zod.string(),
+  "supportPhone": zod.string(),
+  "officeAddress": zod.string(),
+  "replyAll": zod.boolean(),
+  "onlyUnassigned": zod.boolean(),
+  "outsideBusinessHours": zod.boolean(),
+  "keywordOnly": zod.boolean(),
+  "stopOnHuman": zod.boolean(),
+  "rememberContext": zod.boolean(),
+  "useConversationHistory": zod.boolean(),
+  "autoUpdateContact": zod.boolean(),
+  "rememberOptOut": zod.boolean(),
+  "retentionDays": zod.number(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+export const processAiInboundEventBodyTextMax = 4000;
+
+
+
+export const ProcessAiInboundEventBody = zod.object({
+  "leadId": zod.string().min(1),
+  "conversationId": zod.string().min(1).optional(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "text": zod.string().min(1).max(processAiInboundEventBodyTextMax)
+})
+
+export const ProcessAiInboundEventResponse = zod.object({
+  "status": zod.enum(['replied', 'skipped']),
+  "reason": zod.string(),
+  "replyPreview": zod.string(),
+  "provider": zod.string(),
+  "model": zod.string(),
+  "promptApplied": zod.boolean(),
+  "companyName": zod.string(),
+  "conversationId": zod.string(),
+  "memoryUsed": zod.array(zod.string()),
+  "mappingsApplied": zod.array(zod.string()),
+  "rulesExecuted": zod.array(zod.string()),
+  "historyMessages": zod.number(),
+  "contactUpdated": zod.boolean()
+})
+
+
+export const ListAiMemoryItemsQueryParams = zod.object({
+  "kind": zod.enum(['product', 'faq']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const ListAiMemoryItemsResponseItem = zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['product', 'faq']),
+  "title": zod.string(),
+  "content": zod.string(),
+  "price": zod.string(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['active', 'inactive']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListAiMemoryItemsResponse = zod.array(ListAiMemoryItemsResponseItem)
+
+
+export const createAiMemoryItemBodyTitleMin = 2;
+export const createAiMemoryItemBodyTitleMax = 160;
+
+export const createAiMemoryItemBodyContentMax = 20000;
+
+export const createAiMemoryItemBodyPriceMax = 80;
+
+export const createAiMemoryItemBodyTagsItemMax = 40;
+
+export const createAiMemoryItemBodyTagsMax = 20;
+
+
+
+export const CreateAiMemoryItemBody = zod.object({
+  "kind": zod.enum(['product', 'faq']),
+  "title": zod.string().min(createAiMemoryItemBodyTitleMin).max(createAiMemoryItemBodyTitleMax),
+  "content": zod.string().min(1).max(createAiMemoryItemBodyContentMax),
+  "price": zod.string().max(createAiMemoryItemBodyPriceMax).optional(),
+  "tags": zod.array(zod.string().max(createAiMemoryItemBodyTagsItemMax)).max(createAiMemoryItemBodyTagsMax).optional(),
+  "status": zod.enum(['active', 'inactive']).optional()
+})
+
+export const CreateAiMemoryItemResponse = zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['product', 'faq']),
+  "title": zod.string(),
+  "content": zod.string(),
+  "price": zod.string(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['active', 'inactive']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const UpdateAiMemoryItemParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const updateAiMemoryItemBodyTitleMin = 2;
+export const updateAiMemoryItemBodyTitleMax = 160;
+
+export const updateAiMemoryItemBodyContentMax = 20000;
+
+export const updateAiMemoryItemBodyPriceMax = 80;
+
+export const updateAiMemoryItemBodyTagsItemMax = 40;
+
+export const updateAiMemoryItemBodyTagsMax = 20;
+
+
+
+export const UpdateAiMemoryItemBody = zod.object({
+  "title": zod.string().min(updateAiMemoryItemBodyTitleMin).max(updateAiMemoryItemBodyTitleMax).optional(),
+  "content": zod.string().min(1).max(updateAiMemoryItemBodyContentMax).optional(),
+  "price": zod.string().max(updateAiMemoryItemBodyPriceMax).optional(),
+  "tags": zod.array(zod.string().max(updateAiMemoryItemBodyTagsItemMax)).max(updateAiMemoryItemBodyTagsMax).optional(),
+  "status": zod.enum(['active', 'inactive']).optional()
+})
+
+export const UpdateAiMemoryItemResponse = zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['product', 'faq']),
+  "title": zod.string(),
+  "content": zod.string(),
+  "price": zod.string(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['active', 'inactive']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const DeleteAiMemoryItemParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteAiMemoryItemResponse = zod.void()
+
+
+export const ListAiMappingsResponseItem = zod.object({
+  "id": zod.string(),
+  "fieldName": zod.string(),
+  "crmField": zod.string(),
+  "instruction": zod.string(),
+  "status": zod.enum(['active', 'inactive']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListAiMappingsResponse = zod.array(ListAiMappingsResponseItem)
+
+
+export const createAiMappingBodyFieldNameMin = 2;
+export const createAiMappingBodyFieldNameMax = 100;
+
+export const createAiMappingBodyCrmFieldMin = 2;
+export const createAiMappingBodyCrmFieldMax = 100;
+
+export const createAiMappingBodyInstructionMin = 2;
+export const createAiMappingBodyInstructionMax = 500;
+
+
+
+export const CreateAiMappingBody = zod.object({
+  "fieldName": zod.string().min(createAiMappingBodyFieldNameMin).max(createAiMappingBodyFieldNameMax),
+  "crmField": zod.string().min(createAiMappingBodyCrmFieldMin).max(createAiMappingBodyCrmFieldMax),
+  "instruction": zod.string().min(createAiMappingBodyInstructionMin).max(createAiMappingBodyInstructionMax),
+  "status": zod.enum(['active', 'inactive']).optional()
+})
+
+export const CreateAiMappingResponse = zod.object({
+  "id": zod.string(),
+  "fieldName": zod.string(),
+  "crmField": zod.string(),
+  "instruction": zod.string(),
+  "status": zod.enum(['active', 'inactive']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const UpdateAiMappingParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const updateAiMappingBodyFieldNameMin = 2;
+export const updateAiMappingBodyFieldNameMax = 100;
+
+export const updateAiMappingBodyCrmFieldMin = 2;
+export const updateAiMappingBodyCrmFieldMax = 100;
+
+export const updateAiMappingBodyInstructionMin = 2;
+export const updateAiMappingBodyInstructionMax = 500;
+
+
+
+export const UpdateAiMappingBody = zod.object({
+  "fieldName": zod.string().min(updateAiMappingBodyFieldNameMin).max(updateAiMappingBodyFieldNameMax).optional(),
+  "crmField": zod.string().min(updateAiMappingBodyCrmFieldMin).max(updateAiMappingBodyCrmFieldMax).optional(),
+  "instruction": zod.string().min(updateAiMappingBodyInstructionMin).max(updateAiMappingBodyInstructionMax).optional(),
+  "status": zod.enum(['active', 'inactive']).optional()
+})
+
+export const UpdateAiMappingResponse = zod.object({
+  "id": zod.string(),
+  "fieldName": zod.string(),
+  "crmField": zod.string(),
+  "instruction": zod.string(),
+  "status": zod.enum(['active', 'inactive']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const DeleteAiMappingParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteAiMappingResponse = zod.void()
+
+
+export const ListAiRulesResponseItem = zod.object({
+  "id": zod.string(),
+  "trigger": zod.string(),
+  "actionText": zod.string(),
+  "status": zod.enum(['active', 'paused']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListAiRulesResponse = zod.array(ListAiRulesResponseItem)
+
+
+export const createAiRuleBodyTriggerMin = 2;
+export const createAiRuleBodyTriggerMax = 300;
+
+export const createAiRuleBodyActionTextMin = 2;
+export const createAiRuleBodyActionTextMax = 1000;
+
+
+
+export const CreateAiRuleBody = zod.object({
+  "trigger": zod.string().min(createAiRuleBodyTriggerMin).max(createAiRuleBodyTriggerMax),
+  "actionText": zod.string().min(createAiRuleBodyActionTextMin).max(createAiRuleBodyActionTextMax),
+  "status": zod.enum(['active', 'paused']).optional()
+})
+
+export const CreateAiRuleResponse = zod.object({
+  "id": zod.string(),
+  "trigger": zod.string(),
+  "actionText": zod.string(),
+  "status": zod.enum(['active', 'paused']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const UpdateAiRuleParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const updateAiRuleBodyTriggerMin = 2;
+export const updateAiRuleBodyTriggerMax = 300;
+
+export const updateAiRuleBodyActionTextMin = 2;
+export const updateAiRuleBodyActionTextMax = 1000;
+
+
+
+export const UpdateAiRuleBody = zod.object({
+  "trigger": zod.string().min(updateAiRuleBodyTriggerMin).max(updateAiRuleBodyTriggerMax).optional(),
+  "actionText": zod.string().min(updateAiRuleBodyActionTextMin).max(updateAiRuleBodyActionTextMax).optional(),
+  "status": zod.enum(['active', 'paused']).optional()
+})
+
+export const UpdateAiRuleResponse = zod.object({
+  "id": zod.string(),
+  "trigger": zod.string(),
+  "actionText": zod.string(),
+  "status": zod.enum(['active', 'paused']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const DeleteAiRuleParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteAiRuleResponse = zod.void()
+
+
+export const ListSequencesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "status": zod.enum(['draft', 'active', 'paused', 'archived']),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']),
+  "triggerConfig": zod.string(),
+  "timezone": zod.string(),
+  "quietHoursStart": zod.string(),
+  "quietHoursEnd": zod.string(),
+  "steps": zod.array(zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListSequencesResponse = zod.array(ListSequencesResponseItem)
+
+
+export const createSequenceBodyNameMin = 2;
+export const createSequenceBodyNameMax = 160;
+
+export const createSequenceBodyTriggerConfigMax = 500;
+
+export const createSequenceBodyTimezoneMin = 2;
+export const createSequenceBodyTimezoneMax = 100;
+
+export const createSequenceBodyQuietHoursStartRegExp = new RegExp('^([01]\\d|2[0-3]):[0-5]\\d$');
+export const createSequenceBodyQuietHoursEndRegExp = new RegExp('^([01]\\d|2[0-3]):[0-5]\\d$');
+
+
+export const CreateSequenceBody = zod.object({
+  "name": zod.string().min(createSequenceBodyNameMin).max(createSequenceBodyNameMax),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']).optional(),
+  "triggerConfig": zod.string().max(createSequenceBodyTriggerConfigMax).optional(),
+  "timezone": zod.string().min(createSequenceBodyTimezoneMin).max(createSequenceBodyTimezoneMax).optional(),
+  "quietHoursStart": zod.string().regex(createSequenceBodyQuietHoursStartRegExp).optional(),
+  "quietHoursEnd": zod.string().regex(createSequenceBodyQuietHoursEndRegExp).optional()
+})
+
+export const CreateSequenceResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "status": zod.enum(['draft', 'active', 'paused', 'archived']),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']),
+  "triggerConfig": zod.string(),
+  "timezone": zod.string(),
+  "quietHoursStart": zod.string(),
+  "quietHoursEnd": zod.string(),
+  "steps": zod.array(zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const GetSequenceParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const GetSequenceResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "status": zod.enum(['draft', 'active', 'paused', 'archived']),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']),
+  "triggerConfig": zod.string(),
+  "timezone": zod.string(),
+  "quietHoursStart": zod.string(),
+  "quietHoursEnd": zod.string(),
+  "steps": zod.array(zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const UpdateSequenceParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const updateSequenceBodyNameMin = 2;
+export const updateSequenceBodyNameMax = 160;
+
+export const updateSequenceBodyTriggerConfigMax = 500;
+
+export const updateSequenceBodyTimezoneMin = 2;
+export const updateSequenceBodyTimezoneMax = 100;
+
+export const updateSequenceBodyQuietHoursStartRegExp = new RegExp('^([01]\\d|2[0-3]):[0-5]\\d$');
+export const updateSequenceBodyQuietHoursEndRegExp = new RegExp('^([01]\\d|2[0-3]):[0-5]\\d$');
+
+
+export const UpdateSequenceBody = zod.object({
+  "name": zod.string().min(updateSequenceBodyNameMin).max(updateSequenceBodyNameMax).optional(),
+  "status": zod.enum(['draft', 'active', 'paused', 'archived']).optional(),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']).optional(),
+  "triggerConfig": zod.string().max(updateSequenceBodyTriggerConfigMax).optional(),
+  "timezone": zod.string().min(updateSequenceBodyTimezoneMin).max(updateSequenceBodyTimezoneMax).optional(),
+  "quietHoursStart": zod.string().regex(updateSequenceBodyQuietHoursStartRegExp).optional(),
+  "quietHoursEnd": zod.string().regex(updateSequenceBodyQuietHoursEndRegExp).optional()
+})
+
+export const UpdateSequenceResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "status": zod.enum(['draft', 'active', 'paused', 'archived']),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']),
+  "triggerConfig": zod.string(),
+  "timezone": zod.string(),
+  "quietHoursStart": zod.string(),
+  "quietHoursEnd": zod.string(),
+  "steps": zod.array(zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const DeleteSequenceParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteSequenceResponse = zod.void()
+
+
+
+
+
+export const DuplicateSequenceParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DuplicateSequenceResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "status": zod.enum(['draft', 'active', 'paused', 'archived']),
+  "triggerType": zod.enum(['manual', 'new_lead', 'no_reply', 'stage_changed']),
+  "triggerConfig": zod.string(),
+  "timezone": zod.string(),
+  "quietHoursStart": zod.string(),
+  "quietHoursEnd": zod.string(),
+  "steps": zod.array(zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const CreateSequenceStepParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const createSequenceStepBodyPositionMin = 0;
+export const createSequenceStepBodyPositionMax = 1000;
+
+export const createSequenceStepBodyTitleMin = 2;
+export const createSequenceStepBodyTitleMax = 160;
+
+export const createSequenceStepBodyDelayMinutesMin = 0;
+export const createSequenceStepBodyDelayMinutesMax = 525600;
+
+export const createSequenceStepBodyMessageMax = 4000;
+
+export const createSequenceStepBodyQuickRepliesItemMax = 80;
+
+export const createSequenceStepBodyQuickRepliesMax = 10;
+
+
+
+export const CreateSequenceStepBody = zod.object({
+  "position": zod.number().min(createSequenceStepBodyPositionMin).max(createSequenceStepBodyPositionMax).optional(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string().min(createSequenceStepBodyTitleMin).max(createSequenceStepBodyTitleMax),
+  "delayMinutes": zod.number().min(createSequenceStepBodyDelayMinutesMin).max(createSequenceStepBodyDelayMinutesMax).optional(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']).optional(),
+  "message": zod.string().max(createSequenceStepBodyMessageMax).optional(),
+  "quickReplies": zod.array(zod.string().max(createSequenceStepBodyQuickRepliesItemMax)).max(createSequenceStepBodyQuickRepliesMax).optional(),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']).optional(),
+  "exitOnReply": zod.boolean().optional(),
+  "exitOnUnsubscribe": zod.boolean().optional()
+})
+
+export const CreateSequenceStepResponse = zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const UpdateSequenceStepParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const updateSequenceStepBodyOnePositionMin = 0;
+export const updateSequenceStepBodyOnePositionMax = 1000;
+
+export const updateSequenceStepBodyOneTitleMin = 2;
+export const updateSequenceStepBodyOneTitleMax = 160;
+
+export const updateSequenceStepBodyOneDelayMinutesMin = 0;
+export const updateSequenceStepBodyOneDelayMinutesMax = 525600;
+
+export const updateSequenceStepBodyOneMessageMax = 4000;
+
+export const updateSequenceStepBodyOneQuickRepliesItemMax = 80;
+
+export const updateSequenceStepBodyOneQuickRepliesMax = 10;
+
+
+
+export const UpdateSequenceStepBody = zod.object({
+  "position": zod.number().min(updateSequenceStepBodyOnePositionMin).max(updateSequenceStepBodyOnePositionMax).optional(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string().min(updateSequenceStepBodyOneTitleMin).max(updateSequenceStepBodyOneTitleMax),
+  "delayMinutes": zod.number().min(updateSequenceStepBodyOneDelayMinutesMin).max(updateSequenceStepBodyOneDelayMinutesMax).optional(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']).optional(),
+  "message": zod.string().max(updateSequenceStepBodyOneMessageMax).optional(),
+  "quickReplies": zod.array(zod.string().max(updateSequenceStepBodyOneQuickRepliesItemMax)).max(updateSequenceStepBodyOneQuickRepliesMax).optional(),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']).optional(),
+  "exitOnReply": zod.boolean().optional(),
+  "exitOnUnsubscribe": zod.boolean().optional()
+})
+
+export const UpdateSequenceStepResponse = zod.object({
+  "id": zod.string(),
+  "position": zod.number(),
+  "type": zod.enum(['trigger', 'message', 'wait', 'ai']),
+  "title": zod.string(),
+  "delayMinutes": zod.number(),
+  "channel": zod.enum(['whatsapp', 'instagram', 'facebook']),
+  "message": zod.string(),
+  "quickReplies": zod.array(zod.string()),
+  "fallbackAction": zod.enum(['retry', 'skip', 'pause']),
+  "exitOnReply": zod.boolean(),
+  "exitOnUnsubscribe": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+
+
+
+export const DeleteSequenceStepParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteSequenceStepResponse = zod.void()
+
+
+
+
+
+export const EnrollSequenceParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+
+export const enrollSequenceBodyIdempotencyKeyMin = 8;
+export const enrollSequenceBodyIdempotencyKeyMax = 120;
+
+
+
+export const EnrollSequenceBody = zod.object({
+  "leadId": zod.string().min(1),
+  "idempotencyKey": zod.string().min(enrollSequenceBodyIdempotencyKeyMin).max(enrollSequenceBodyIdempotencyKeyMax)
+})
+
+export const EnrollSequenceResponse = zod.object({
+  "id": zod.string(),
+  "sequenceId": zod.string(),
+  "leadId": zod.string().nullish(),
+  "status": zod.enum(['scheduled', 'running', 'completed', 'paused', 'canceled', 'failed']),
+  "currentStep": zod.number(),
+  "nextRunAt": zod.string().nullish(),
+  "attemptCount": zod.number(),
+  "lastError": zod.string().nullish(),
+  "idempotencyKey": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const ListSequenceRunsResponseItem = zod.object({
+  "id": zod.string(),
+  "sequenceId": zod.string(),
+  "leadId": zod.string().nullish(),
+  "status": zod.enum(['scheduled', 'running', 'completed', 'paused', 'canceled', 'failed']),
+  "currentStep": zod.number(),
+  "nextRunAt": zod.string().nullish(),
+  "attemptCount": zod.number(),
+  "lastError": zod.string().nullish(),
+  "idempotencyKey": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListSequenceRunsResponse = zod.array(ListSequenceRunsResponseItem)
+
+
+
+
+
+export const UpdateSequenceRunParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const UpdateSequenceRunBody = zod.object({
+  "status": zod.enum(['scheduled', 'paused', 'canceled'])
+})
+
+export const UpdateSequenceRunResponse = zod.object({
+  "id": zod.string(),
+  "sequenceId": zod.string(),
+  "leadId": zod.string().nullish(),
+  "status": zod.enum(['scheduled', 'running', 'completed', 'paused', 'canceled', 'failed']),
+  "currentStep": zod.number(),
+  "nextRunAt": zod.string().nullish(),
+  "attemptCount": zod.number(),
+  "lastError": zod.string().nullish(),
+  "idempotencyKey": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
 export const GetBillingResponse = zod.object({
   "plan": zod.string(),
   "walletBalance": zod.number(),

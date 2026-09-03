@@ -581,6 +581,379 @@ paths:
           description: Deleted
         "404":
           $ref: "#/components/responses/NotFound"
+  /ai-settings:
+    get:
+      operationId: getAiSettings
+      tags: [ai]
+      responses:
+        "200":
+          description: Workspace AI settings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiSettings" }
+    patch:
+      operationId: updateAiSettings
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiSettingsUpdate" }
+      responses:
+        "200":
+          description: Updated AI settings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiSettings" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /ai-inbound-events:
+    post:
+      operationId: processAiInboundEvent
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiInboundEventInput" }
+      responses:
+        "200":
+          description: Provider-independent AI runtime result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiRuntimeResult" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /ai-memory:
+    get:
+      operationId: listAiMemoryItems
+      tags: [ai]
+      parameters:
+        - name: kind
+          in: query
+          schema: { type: string, enum: [product, faq] }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: AI memory items
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AiMemoryItem" } }
+    post:
+      operationId: createAiMemoryItem
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiMemoryItemInput" }
+      responses:
+        "201":
+          description: Created memory item
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiMemoryItem" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /ai-memory/{id}:
+    patch:
+      operationId: updateAiMemoryItem
+      tags: [ai]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiMemoryItemUpdate" }
+      responses:
+        "200":
+          description: Updated memory item
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiMemoryItem" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteAiMemoryItem
+      tags: [ai]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204": { description: Deleted }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /ai-mappings:
+    get:
+      operationId: listAiMappings
+      tags: [ai]
+      responses:
+        "200":
+          description: CRM field mappings
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AiMapping" } }
+    post:
+      operationId: createAiMapping
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiMappingInput" }
+      responses:
+        "201":
+          description: Created mapping
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiMapping" }
+  /ai-mappings/{id}:
+    patch:
+      operationId: updateAiMapping
+      tags: [ai]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiMappingUpdate" }
+      responses:
+        "200":
+          description: Updated mapping
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiMapping" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteAiMapping
+      tags: [ai]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204": { description: Deleted }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /ai-rules:
+    get:
+      operationId: listAiRules
+      tags: [ai]
+      responses:
+        "200":
+          description: Automatic CRM rules
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AiRule" } }
+    post:
+      operationId: createAiRule
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiRuleInput" }
+      responses:
+        "201":
+          description: Created rule
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiRule" }
+  /ai-rules/{id}:
+    patch:
+      operationId: updateAiRule
+      tags: [ai]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiRuleUpdate" }
+      responses:
+        "200":
+          description: Updated rule
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiRule" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteAiRule
+      tags: [ai]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204": { description: Deleted }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /sequences:
+    get:
+      operationId: listSequences
+      tags: [sequences]
+      responses:
+        "200":
+          description: Follow-up sequences with steps
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Sequence" } }
+    post:
+      operationId: createSequence
+      tags: [sequences]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SequenceInput" }
+      responses:
+        "201":
+          description: Created sequence
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Sequence" }
+  /sequences/{id}:
+    get:
+      operationId: getSequence
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200":
+          description: Sequence with steps
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Sequence" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateSequence
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SequenceUpdate" }
+      responses:
+        "200":
+          description: Updated sequence
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Sequence" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteSequence
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204": { description: Deleted }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /sequences/{id}/duplicate:
+    post:
+      operationId: duplicateSequence
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "201":
+          description: Duplicated sequence
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Sequence" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /sequences/{id}/steps:
+    post:
+      operationId: createSequenceStep
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SequenceStepInput" }
+      responses:
+        "201":
+          description: Created step
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SequenceStep" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /sequence-steps/{id}:
+    patch:
+      operationId: updateSequenceStep
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SequenceStepUpdate" }
+      responses:
+        "200":
+          description: Updated step
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SequenceStep" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteSequenceStep
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "204": { description: Deleted }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /sequences/{id}/enroll:
+    post:
+      operationId: enrollSequence
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SequenceEnrollmentInput" }
+      responses:
+        "201":
+          description: Scheduled sequence run
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SequenceRun" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /sequence-runs:
+    get:
+      operationId: listSequenceRuns
+      tags: [sequences]
+      responses:
+        "200":
+          description: Sequence run history
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/SequenceRun" } }
+  /sequence-runs/{id}:
+    patch:
+      operationId: updateSequenceRun
+      tags: [sequences]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SequenceRunUpdate" }
+      responses:
+        "200":
+          description: Updated sequence run
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SequenceRun" }
+        "404":
+          $ref: "#/components/responses/NotFound"
   /billing:
     get:
       operationId: getBilling
@@ -1020,6 +1393,259 @@ components:
       properties:
         title: { type: string, minLength: 2, maxLength: 120 }
         content: { type: string, minLength: 1, maxLength: 20000 }
+    AiSettings:
+      type: object
+      required: [id, provider, model, temperature, maxTokens, prompt, botName, companyName, companyTagline, industry, contactEmail, supportPhone, officeAddress, replyAll, onlyUnassigned, outsideBusinessHours, keywordOnly, stopOnHuman, rememberContext, useConversationHistory, autoUpdateContact, rememberOptOut, retentionDays, updatedAt]
+      properties:
+        id: { type: string }
+        provider: { type: string, enum: [openai, gemini, custom] }
+        model: { type: string }
+        temperature: { type: number }
+        maxTokens: { type: number }
+        prompt: { type: string }
+        botName: { type: string }
+        companyName: { type: string }
+        companyTagline: { type: string }
+        industry: { type: string }
+        contactEmail: { type: string }
+        supportPhone: { type: string }
+        officeAddress: { type: string }
+        replyAll: { type: boolean }
+        onlyUnassigned: { type: boolean }
+        outsideBusinessHours: { type: boolean }
+        keywordOnly: { type: boolean }
+        stopOnHuman: { type: boolean }
+        rememberContext: { type: boolean }
+        useConversationHistory: { type: boolean }
+        autoUpdateContact: { type: boolean }
+        rememberOptOut: { type: boolean }
+        retentionDays: { type: number }
+        updatedAt: { type: string, format: date-time }
+    AiSettingsUpdate:
+      type: object
+      properties:
+        provider: { type: string, enum: [openai, gemini, custom] }
+        model: { type: string, minLength: 1, maxLength: 100 }
+        temperature: { type: number, minimum: 0, maximum: 2 }
+        maxTokens: { type: number, minimum: 50, maximum: 8000 }
+        prompt: { type: string, minLength: 1, maxLength: 4000 }
+        botName: { type: string, minLength: 2, maxLength: 100 }
+        companyName: { type: string, maxLength: 120 }
+        companyTagline: { type: string, maxLength: 200 }
+        industry: { type: string, maxLength: 100 }
+        contactEmail: { type: string, maxLength: 200 }
+        supportPhone: { type: string, maxLength: 50 }
+        officeAddress: { type: string, maxLength: 500 }
+        replyAll: { type: boolean }
+        onlyUnassigned: { type: boolean }
+        outsideBusinessHours: { type: boolean }
+        keywordOnly: { type: boolean }
+        stopOnHuman: { type: boolean }
+        rememberContext: { type: boolean }
+        useConversationHistory: { type: boolean }
+        autoUpdateContact: { type: boolean }
+        rememberOptOut: { type: boolean }
+        retentionDays: { type: number, minimum: 0, maximum: 3650 }
+    AiInboundEventInput:
+      type: object
+      required: [leadId, channel, text]
+      properties:
+        leadId: { type: string, minLength: 1 }
+        conversationId: { type: string, minLength: 1 }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        text: { type: string, minLength: 1, maxLength: 4000 }
+    AiRuntimeResult:
+      type: object
+      required: [status, reason, replyPreview, provider, model, promptApplied, companyName, conversationId, memoryUsed, mappingsApplied, rulesExecuted, historyMessages, contactUpdated]
+      properties:
+        status: { type: string, enum: [replied, skipped] }
+        reason: { type: string }
+        replyPreview: { type: string }
+        provider: { type: string }
+        model: { type: string }
+        promptApplied: { type: boolean }
+        companyName: { type: string }
+        conversationId: { type: string }
+        memoryUsed: { type: array, items: { type: string } }
+        mappingsApplied: { type: array, items: { type: string } }
+        rulesExecuted: { type: array, items: { type: string } }
+        historyMessages: { type: number }
+        contactUpdated: { type: boolean }
+    AiMemoryItem:
+      type: object
+      required: [id, kind, title, content, price, tags, status, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [product, faq] }
+        title: { type: string }
+        content: { type: string }
+        price: { type: string }
+        tags: { type: array, items: { type: string } }
+        status: { type: string, enum: [active, inactive] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AiMemoryItemInput:
+      type: object
+      required: [kind, title, content]
+      properties:
+        kind: { type: string, enum: [product, faq] }
+        title: { type: string, minLength: 2, maxLength: 160 }
+        content: { type: string, minLength: 1, maxLength: 20000 }
+        price: { type: string, maxLength: 80 }
+        tags: { type: array, maxItems: 20, items: { type: string, maxLength: 40 } }
+        status: { type: string, enum: [active, inactive] }
+    AiMemoryItemUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 2, maxLength: 160 }
+        content: { type: string, minLength: 1, maxLength: 20000 }
+        price: { type: string, maxLength: 80 }
+        tags: { type: array, maxItems: 20, items: { type: string, maxLength: 40 } }
+        status: { type: string, enum: [active, inactive] }
+    AiMapping:
+      type: object
+      required: [id, fieldName, crmField, instruction, status, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        fieldName: { type: string }
+        crmField: { type: string }
+        instruction: { type: string }
+        status: { type: string, enum: [active, inactive] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AiMappingInput:
+      type: object
+      required: [fieldName, crmField, instruction]
+      properties:
+        fieldName: { type: string, minLength: 2, maxLength: 100 }
+        crmField: { type: string, minLength: 2, maxLength: 100 }
+        instruction: { type: string, minLength: 2, maxLength: 500 }
+        status: { type: string, enum: [active, inactive] }
+    AiMappingUpdate:
+      type: object
+      properties:
+        fieldName: { type: string, minLength: 2, maxLength: 100 }
+        crmField: { type: string, minLength: 2, maxLength: 100 }
+        instruction: { type: string, minLength: 2, maxLength: 500 }
+        status: { type: string, enum: [active, inactive] }
+    AiRule:
+      type: object
+      required: [id, trigger, actionText, status, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        trigger: { type: string }
+        actionText: { type: string }
+        status: { type: string, enum: [active, paused] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AiRuleInput:
+      type: object
+      required: [trigger, actionText]
+      properties:
+        trigger: { type: string, minLength: 2, maxLength: 300 }
+        actionText: { type: string, minLength: 2, maxLength: 1000 }
+        status: { type: string, enum: [active, paused] }
+    AiRuleUpdate:
+      type: object
+      properties:
+        trigger: { type: string, minLength: 2, maxLength: 300 }
+        actionText: { type: string, minLength: 2, maxLength: 1000 }
+        status: { type: string, enum: [active, paused] }
+    SequenceStep:
+      type: object
+      required: [id, position, type, title, delayMinutes, channel, message, quickReplies, fallbackAction, exitOnReply, exitOnUnsubscribe, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        position: { type: number }
+        type: { type: string, enum: [trigger, message, wait, ai] }
+        title: { type: string }
+        delayMinutes: { type: number }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        message: { type: string }
+        quickReplies: { type: array, items: { type: string } }
+        fallbackAction: { type: string, enum: [retry, skip, pause] }
+        exitOnReply: { type: boolean }
+        exitOnUnsubscribe: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    SequenceStepInput:
+      type: object
+      required: [type, title]
+      properties:
+        position: { type: number, minimum: 0, maximum: 1000 }
+        type: { type: string, enum: [trigger, message, wait, ai] }
+        title: { type: string, minLength: 2, maxLength: 160 }
+        delayMinutes: { type: number, minimum: 0, maximum: 525600 }
+        channel: { type: string, enum: [whatsapp, instagram, facebook] }
+        message: { type: string, maxLength: 4000 }
+        quickReplies: { type: array, maxItems: 10, items: { type: string, maxLength: 80 } }
+        fallbackAction: { type: string, enum: [retry, skip, pause] }
+        exitOnReply: { type: boolean }
+        exitOnUnsubscribe: { type: boolean }
+    SequenceStepUpdate:
+      allOf:
+        - $ref: "#/components/schemas/SequenceStepInput"
+    Sequence:
+      type: object
+      required: [id, name, status, triggerType, triggerConfig, timezone, quietHoursStart, quietHoursEnd, steps, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [draft, active, paused, archived] }
+        triggerType: { type: string, enum: [manual, new_lead, no_reply, stage_changed] }
+        triggerConfig: { type: string }
+        timezone: { type: string }
+        quietHoursStart: { type: string }
+        quietHoursEnd: { type: string }
+        steps: { type: array, items: { $ref: "#/components/schemas/SequenceStep" } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    SequenceInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 160 }
+        triggerType: { type: string, enum: [manual, new_lead, no_reply, stage_changed] }
+        triggerConfig: { type: string, maxLength: 500 }
+        timezone: { type: string, minLength: 2, maxLength: 100 }
+        quietHoursStart: { type: string, pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" }
+        quietHoursEnd: { type: string, pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" }
+    SequenceUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 160 }
+        status: { type: string, enum: [draft, active, paused, archived] }
+        triggerType: { type: string, enum: [manual, new_lead, no_reply, stage_changed] }
+        triggerConfig: { type: string, maxLength: 500 }
+        timezone: { type: string, minLength: 2, maxLength: 100 }
+        quietHoursStart: { type: string, pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" }
+        quietHoursEnd: { type: string, pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" }
+    SequenceEnrollmentInput:
+      type: object
+      required: [leadId, idempotencyKey]
+      properties:
+        leadId: { type: string, minLength: 1 }
+        idempotencyKey: { type: string, minLength: 8, maxLength: 120 }
+    SequenceRun:
+      type: object
+      required: [id, sequenceId, status, currentStep, attemptCount, idempotencyKey, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        sequenceId: { type: string }
+        leadId: { type: ["string", "null"] }
+        status: { type: string, enum: [scheduled, running, completed, paused, canceled, failed] }
+        currentStep: { type: number }
+        nextRunAt: { type: ["string", "null"] }
+        attemptCount: { type: number }
+        lastError: { type: ["string", "null"] }
+        idempotencyKey: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    SequenceRunUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [scheduled, paused, canceled] }
     BillingTransaction:
       type: object
       required: [id, type, amount, reference, createdAt]

@@ -641,6 +641,641 @@ export interface KnowledgeSourceInput {
   content: string;
 }
 
+export type AiSettingsProvider = typeof AiSettingsProvider[keyof typeof AiSettingsProvider];
+
+
+export const AiSettingsProvider = {
+  openai: 'openai',
+  gemini: 'gemini',
+  custom: 'custom',
+} as const;
+
+export interface AiSettings {
+  id: string;
+  provider: AiSettingsProvider;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  prompt: string;
+  botName: string;
+  companyName: string;
+  companyTagline: string;
+  industry: string;
+  contactEmail: string;
+  supportPhone: string;
+  officeAddress: string;
+  replyAll: boolean;
+  onlyUnassigned: boolean;
+  outsideBusinessHours: boolean;
+  keywordOnly: boolean;
+  stopOnHuman: boolean;
+  rememberContext: boolean;
+  useConversationHistory: boolean;
+  autoUpdateContact: boolean;
+  rememberOptOut: boolean;
+  retentionDays: number;
+  updatedAt: string;
+}
+
+export type AiSettingsUpdateProvider = typeof AiSettingsUpdateProvider[keyof typeof AiSettingsUpdateProvider];
+
+
+export const AiSettingsUpdateProvider = {
+  openai: 'openai',
+  gemini: 'gemini',
+  custom: 'custom',
+} as const;
+
+export interface AiSettingsUpdate {
+  provider?: AiSettingsUpdateProvider;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  model?: string;
+  /**
+     * @minimum 0
+     * @maximum 2
+     */
+  temperature?: number;
+  /**
+     * @minimum 50
+     * @maximum 8000
+     */
+  maxTokens?: number;
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  prompt?: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  botName?: string;
+  /** @maxLength 120 */
+  companyName?: string;
+  /** @maxLength 200 */
+  companyTagline?: string;
+  /** @maxLength 100 */
+  industry?: string;
+  /** @maxLength 200 */
+  contactEmail?: string;
+  /** @maxLength 50 */
+  supportPhone?: string;
+  /** @maxLength 500 */
+  officeAddress?: string;
+  replyAll?: boolean;
+  onlyUnassigned?: boolean;
+  outsideBusinessHours?: boolean;
+  keywordOnly?: boolean;
+  stopOnHuman?: boolean;
+  rememberContext?: boolean;
+  useConversationHistory?: boolean;
+  autoUpdateContact?: boolean;
+  rememberOptOut?: boolean;
+  /**
+     * @minimum 0
+     * @maximum 3650
+     */
+  retentionDays?: number;
+}
+
+export type AiInboundEventInputChannel = typeof AiInboundEventInputChannel[keyof typeof AiInboundEventInputChannel];
+
+
+export const AiInboundEventInputChannel = {
+  whatsapp: 'whatsapp',
+  instagram: 'instagram',
+  facebook: 'facebook',
+} as const;
+
+export interface AiInboundEventInput {
+  /** @minLength 1 */
+  leadId: string;
+  /** @minLength 1 */
+  conversationId?: string;
+  channel: AiInboundEventInputChannel;
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  text: string;
+}
+
+export type AiRuntimeResultStatus = typeof AiRuntimeResultStatus[keyof typeof AiRuntimeResultStatus];
+
+
+export const AiRuntimeResultStatus = {
+  replied: 'replied',
+  skipped: 'skipped',
+} as const;
+
+export interface AiRuntimeResult {
+  status: AiRuntimeResultStatus;
+  reason: string;
+  replyPreview: string;
+  provider: string;
+  model: string;
+  promptApplied: boolean;
+  companyName: string;
+  conversationId: string;
+  memoryUsed: string[];
+  mappingsApplied: string[];
+  rulesExecuted: string[];
+  historyMessages: number;
+  contactUpdated: boolean;
+}
+
+export type AiMemoryItemKind = typeof AiMemoryItemKind[keyof typeof AiMemoryItemKind];
+
+
+export const AiMemoryItemKind = {
+  product: 'product',
+  faq: 'faq',
+} as const;
+
+export type AiMemoryItemStatus = typeof AiMemoryItemStatus[keyof typeof AiMemoryItemStatus];
+
+
+export const AiMemoryItemStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface AiMemoryItem {
+  id: string;
+  kind: AiMemoryItemKind;
+  title: string;
+  content: string;
+  price: string;
+  tags: string[];
+  status: AiMemoryItemStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AiMemoryItemInputKind = typeof AiMemoryItemInputKind[keyof typeof AiMemoryItemInputKind];
+
+
+export const AiMemoryItemInputKind = {
+  product: 'product',
+  faq: 'faq',
+} as const;
+
+export type AiMemoryItemInputStatus = typeof AiMemoryItemInputStatus[keyof typeof AiMemoryItemInputStatus];
+
+
+export const AiMemoryItemInputStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface AiMemoryItemInput {
+  kind: AiMemoryItemInputKind;
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  title: string;
+  /**
+     * @minLength 1
+     * @maxLength 20000
+     */
+  content: string;
+  /** @maxLength 80 */
+  price?: string;
+  /**
+     * @maxItems 20
+     * @items.maxLength 40
+     */
+  tags?: string[];
+  status?: AiMemoryItemInputStatus;
+}
+
+export type AiMemoryItemUpdateStatus = typeof AiMemoryItemUpdateStatus[keyof typeof AiMemoryItemUpdateStatus];
+
+
+export const AiMemoryItemUpdateStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface AiMemoryItemUpdate {
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  title?: string;
+  /**
+     * @minLength 1
+     * @maxLength 20000
+     */
+  content?: string;
+  /** @maxLength 80 */
+  price?: string;
+  /**
+     * @maxItems 20
+     * @items.maxLength 40
+     */
+  tags?: string[];
+  status?: AiMemoryItemUpdateStatus;
+}
+
+export type AiMappingStatus = typeof AiMappingStatus[keyof typeof AiMappingStatus];
+
+
+export const AiMappingStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface AiMapping {
+  id: string;
+  fieldName: string;
+  crmField: string;
+  instruction: string;
+  status: AiMappingStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AiMappingInputStatus = typeof AiMappingInputStatus[keyof typeof AiMappingInputStatus];
+
+
+export const AiMappingInputStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface AiMappingInput {
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  fieldName: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  crmField: string;
+  /**
+     * @minLength 2
+     * @maxLength 500
+     */
+  instruction: string;
+  status?: AiMappingInputStatus;
+}
+
+export type AiMappingUpdateStatus = typeof AiMappingUpdateStatus[keyof typeof AiMappingUpdateStatus];
+
+
+export const AiMappingUpdateStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface AiMappingUpdate {
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  fieldName?: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  crmField?: string;
+  /**
+     * @minLength 2
+     * @maxLength 500
+     */
+  instruction?: string;
+  status?: AiMappingUpdateStatus;
+}
+
+export type AiRuleStatus = typeof AiRuleStatus[keyof typeof AiRuleStatus];
+
+
+export const AiRuleStatus = {
+  active: 'active',
+  paused: 'paused',
+} as const;
+
+export interface AiRule {
+  id: string;
+  trigger: string;
+  actionText: string;
+  status: AiRuleStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AiRuleInputStatus = typeof AiRuleInputStatus[keyof typeof AiRuleInputStatus];
+
+
+export const AiRuleInputStatus = {
+  active: 'active',
+  paused: 'paused',
+} as const;
+
+export interface AiRuleInput {
+  /**
+     * @minLength 2
+     * @maxLength 300
+     */
+  trigger: string;
+  /**
+     * @minLength 2
+     * @maxLength 1000
+     */
+  actionText: string;
+  status?: AiRuleInputStatus;
+}
+
+export type AiRuleUpdateStatus = typeof AiRuleUpdateStatus[keyof typeof AiRuleUpdateStatus];
+
+
+export const AiRuleUpdateStatus = {
+  active: 'active',
+  paused: 'paused',
+} as const;
+
+export interface AiRuleUpdate {
+  /**
+     * @minLength 2
+     * @maxLength 300
+     */
+  trigger?: string;
+  /**
+     * @minLength 2
+     * @maxLength 1000
+     */
+  actionText?: string;
+  status?: AiRuleUpdateStatus;
+}
+
+export type SequenceStepType = typeof SequenceStepType[keyof typeof SequenceStepType];
+
+
+export const SequenceStepType = {
+  trigger: 'trigger',
+  message: 'message',
+  wait: 'wait',
+  ai: 'ai',
+} as const;
+
+export type SequenceStepChannel = typeof SequenceStepChannel[keyof typeof SequenceStepChannel];
+
+
+export const SequenceStepChannel = {
+  whatsapp: 'whatsapp',
+  instagram: 'instagram',
+  facebook: 'facebook',
+} as const;
+
+export type SequenceStepFallbackAction = typeof SequenceStepFallbackAction[keyof typeof SequenceStepFallbackAction];
+
+
+export const SequenceStepFallbackAction = {
+  retry: 'retry',
+  skip: 'skip',
+  pause: 'pause',
+} as const;
+
+export interface SequenceStep {
+  id: string;
+  position: number;
+  type: SequenceStepType;
+  title: string;
+  delayMinutes: number;
+  channel: SequenceStepChannel;
+  message: string;
+  quickReplies: string[];
+  fallbackAction: SequenceStepFallbackAction;
+  exitOnReply: boolean;
+  exitOnUnsubscribe: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SequenceStepInputType = typeof SequenceStepInputType[keyof typeof SequenceStepInputType];
+
+
+export const SequenceStepInputType = {
+  trigger: 'trigger',
+  message: 'message',
+  wait: 'wait',
+  ai: 'ai',
+} as const;
+
+export type SequenceStepInputChannel = typeof SequenceStepInputChannel[keyof typeof SequenceStepInputChannel];
+
+
+export const SequenceStepInputChannel = {
+  whatsapp: 'whatsapp',
+  instagram: 'instagram',
+  facebook: 'facebook',
+} as const;
+
+export type SequenceStepInputFallbackAction = typeof SequenceStepInputFallbackAction[keyof typeof SequenceStepInputFallbackAction];
+
+
+export const SequenceStepInputFallbackAction = {
+  retry: 'retry',
+  skip: 'skip',
+  pause: 'pause',
+} as const;
+
+export interface SequenceStepInput {
+  /**
+     * @minimum 0
+     * @maximum 1000
+     */
+  position?: number;
+  type: SequenceStepInputType;
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  title: string;
+  /**
+     * @minimum 0
+     * @maximum 525600
+     */
+  delayMinutes?: number;
+  channel?: SequenceStepInputChannel;
+  /** @maxLength 4000 */
+  message?: string;
+  /**
+     * @maxItems 10
+     * @items.maxLength 80
+     */
+  quickReplies?: string[];
+  fallbackAction?: SequenceStepInputFallbackAction;
+  exitOnReply?: boolean;
+  exitOnUnsubscribe?: boolean;
+}
+
+export type SequenceStepUpdate = SequenceStepInput;
+
+export type SequenceStatus = typeof SequenceStatus[keyof typeof SequenceStatus];
+
+
+export const SequenceStatus = {
+  draft: 'draft',
+  active: 'active',
+  paused: 'paused',
+  archived: 'archived',
+} as const;
+
+export type SequenceTriggerType = typeof SequenceTriggerType[keyof typeof SequenceTriggerType];
+
+
+export const SequenceTriggerType = {
+  manual: 'manual',
+  new_lead: 'new_lead',
+  no_reply: 'no_reply',
+  stage_changed: 'stage_changed',
+} as const;
+
+export interface Sequence {
+  id: string;
+  name: string;
+  status: SequenceStatus;
+  triggerType: SequenceTriggerType;
+  triggerConfig: string;
+  timezone: string;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  steps: SequenceStep[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SequenceInputTriggerType = typeof SequenceInputTriggerType[keyof typeof SequenceInputTriggerType];
+
+
+export const SequenceInputTriggerType = {
+  manual: 'manual',
+  new_lead: 'new_lead',
+  no_reply: 'no_reply',
+  stage_changed: 'stage_changed',
+} as const;
+
+export interface SequenceInput {
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  name: string;
+  triggerType?: SequenceInputTriggerType;
+  /** @maxLength 500 */
+  triggerConfig?: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  timezone?: string;
+  /** @pattern ^([01]\d|2[0-3]):[0-5]\d$ */
+  quietHoursStart?: string;
+  /** @pattern ^([01]\d|2[0-3]):[0-5]\d$ */
+  quietHoursEnd?: string;
+}
+
+export type SequenceUpdateStatus = typeof SequenceUpdateStatus[keyof typeof SequenceUpdateStatus];
+
+
+export const SequenceUpdateStatus = {
+  draft: 'draft',
+  active: 'active',
+  paused: 'paused',
+  archived: 'archived',
+} as const;
+
+export type SequenceUpdateTriggerType = typeof SequenceUpdateTriggerType[keyof typeof SequenceUpdateTriggerType];
+
+
+export const SequenceUpdateTriggerType = {
+  manual: 'manual',
+  new_lead: 'new_lead',
+  no_reply: 'no_reply',
+  stage_changed: 'stage_changed',
+} as const;
+
+export interface SequenceUpdate {
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  name?: string;
+  status?: SequenceUpdateStatus;
+  triggerType?: SequenceUpdateTriggerType;
+  /** @maxLength 500 */
+  triggerConfig?: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  timezone?: string;
+  /** @pattern ^([01]\d|2[0-3]):[0-5]\d$ */
+  quietHoursStart?: string;
+  /** @pattern ^([01]\d|2[0-3]):[0-5]\d$ */
+  quietHoursEnd?: string;
+}
+
+export interface SequenceEnrollmentInput {
+  /** @minLength 1 */
+  leadId: string;
+  /**
+     * @minLength 8
+     * @maxLength 120
+     */
+  idempotencyKey: string;
+}
+
+export type SequenceRunStatus = typeof SequenceRunStatus[keyof typeof SequenceRunStatus];
+
+
+export const SequenceRunStatus = {
+  scheduled: 'scheduled',
+  running: 'running',
+  completed: 'completed',
+  paused: 'paused',
+  canceled: 'canceled',
+  failed: 'failed',
+} as const;
+
+export interface SequenceRun {
+  id: string;
+  sequenceId: string;
+  /** @nullable */
+  leadId?: string | null;
+  status: SequenceRunStatus;
+  currentStep: number;
+  /** @nullable */
+  nextRunAt?: string | null;
+  attemptCount: number;
+  /** @nullable */
+  lastError?: string | null;
+  idempotencyKey: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SequenceRunUpdateStatus = typeof SequenceRunUpdateStatus[keyof typeof SequenceRunUpdateStatus];
+
+
+export const SequenceRunUpdateStatus = {
+  scheduled: 'scheduled',
+  paused: 'paused',
+  canceled: 'canceled',
+} as const;
+
+export interface SequenceRunUpdate {
+  status: SequenceRunUpdateStatus;
+}
+
 export interface BillingTransaction {
   id: string;
   type: string;
@@ -843,4 +1478,17 @@ export type ListConversationsParams = {
 channel?: string;
 search?: string;
 };
+
+export type ListAiMemoryItemsParams = {
+kind?: ListAiMemoryItemsKind;
+search?: string;
+};
+
+export type ListAiMemoryItemsKind = typeof ListAiMemoryItemsKind[keyof typeof ListAiMemoryItemsKind];
+
+
+export const ListAiMemoryItemsKind = {
+  product: 'product',
+  faq: 'faq',
+} as const;
 

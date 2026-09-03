@@ -151,6 +151,9 @@ export const messagesTable = pgTable(
     body: text("body").notNull(),
     direction: text("direction").notNull(),
     senderName: text("sender_name").notNull(),
+    sequenceRunId: uuid("sequence_run_id"),
+    sequenceStepId: uuid("sequence_step_id"),
+    deliveryStatus: text("delivery_status").notNull().default("delivered"),
     sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("messages_conversation_sent_idx").on(table.conversationId, table.sentAt)],
@@ -225,6 +228,150 @@ export const knowledgeSourcesTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   },
   (table) => [index("knowledge_sources_workspace_idx").on(table.workspaceId)],
+);
+
+export const aiAgentSettingsTable = pgTable(
+  "ai_agent_settings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull().default("openai"),
+    model: text("model").notNull().default("gpt-4o"),
+    temperature: real("temperature").notNull().default(0.7),
+    maxTokens: integer("max_tokens").notNull().default(500),
+    prompt: text("prompt").notNull().default("You are a helpful sales assistant. Answer accurately, qualify leads, and transfer to a human when unsure."),
+    botName: text("bot_name").notNull().default("Ai Botflow Assistant"),
+    companyName: text("company_name").notNull().default(""),
+    companyTagline: text("company_tagline").notNull().default(""),
+    industry: text("industry").notNull().default(""),
+    contactEmail: text("contact_email").notNull().default(""),
+    supportPhone: text("support_phone").notNull().default(""),
+    officeAddress: text("office_address").notNull().default(""),
+    replyAll: boolean("reply_all").notNull().default(true),
+    onlyUnassigned: boolean("only_unassigned").notNull().default(false),
+    outsideBusinessHours: boolean("outside_business_hours").notNull().default(false),
+    keywordOnly: boolean("keyword_only").notNull().default(false),
+    stopOnHuman: boolean("stop_on_human").notNull().default(true),
+    rememberContext: boolean("remember_context").notNull().default(true),
+    useConversationHistory: boolean("use_conversation_history").notNull().default(true),
+    autoUpdateContact: boolean("auto_update_contact").notNull().default(true),
+    rememberOptOut: boolean("remember_opt_out").notNull().default(true),
+    retentionDays: integer("retention_days").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [uniqueIndex("ai_agent_settings_workspace_idx").on(table.workspaceId)],
+);
+
+export const aiMemoryItemsTable = pgTable(
+  "ai_memory_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    title: text("title").notNull(),
+    content: text("content").notNull().default(""),
+    price: text("price").notNull().default(""),
+    tags: text("tags").array().notNull().default([]),
+    status: text("status").notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [index("ai_memory_items_workspace_kind_idx").on(table.workspaceId, table.kind)],
+);
+
+export const aiMappingsTable = pgTable(
+  "ai_crm_mappings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    fieldName: text("field_name").notNull(),
+    crmField: text("crm_field").notNull(),
+    instruction: text("instruction").notNull(),
+    status: text("status").notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [index("ai_crm_mappings_workspace_idx").on(table.workspaceId)],
+);
+
+export const aiRulesTable = pgTable(
+  "ai_rules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    trigger: text("trigger").notNull(),
+    actionText: text("action_text").notNull(),
+    status: text("status").notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [index("ai_rules_workspace_idx").on(table.workspaceId)],
+);
+
+export const sequencesTable = pgTable(
+  "sequences",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    status: text("status").notNull().default("draft"),
+    triggerType: text("trigger_type").notNull().default("manual"),
+    triggerConfig: text("trigger_config").notNull().default(""),
+    timezone: text("timezone").notNull().default("Asia/Kolkata"),
+    quietHoursStart: text("quiet_hours_start").notNull().default("21:00"),
+    quietHoursEnd: text("quiet_hours_end").notNull().default("09:00"),
+    createdByUserId: uuid("created_by_user_id").references(() => usersTable.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [index("sequences_workspace_status_idx").on(table.workspaceId, table.status)],
+);
+
+export const sequenceStepsTable = pgTable(
+  "sequence_steps",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    sequenceId: uuid("sequence_id").notNull().references(() => sequencesTable.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    type: text("type").notNull().default("message"),
+    title: text("title").notNull(),
+    delayMinutes: integer("delay_minutes").notNull().default(0),
+    channel: text("channel").notNull().default("whatsapp"),
+    message: text("message").notNull().default(""),
+    quickReplies: text("quick_replies").array().notNull().default([]),
+    fallbackAction: text("fallback_action").notNull().default("retry"),
+    exitOnReply: boolean("exit_on_reply").notNull().default(true),
+    exitOnUnsubscribe: boolean("exit_on_unsubscribe").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("sequence_steps_sequence_position_idx").on(table.sequenceId, table.position),
+    index("sequence_steps_workspace_idx").on(table.workspaceId),
+  ],
+);
+
+export const sequenceRunsTable = pgTable(
+  "sequence_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspacesTable.id, { onDelete: "cascade" }),
+    sequenceId: uuid("sequence_id").notNull().references(() => sequencesTable.id, { onDelete: "cascade" }),
+    leadId: uuid("lead_id").references(() => leadsTable.id, { onDelete: "set null" }),
+    status: text("status").notNull().default("scheduled"),
+    currentStep: integer("current_step").notNull().default(0),
+    nextRunAt: timestamp("next_run_at", { withTimezone: true }),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastError: text("last_error"),
+    idempotencyKey: text("idempotency_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("sequence_runs_workspace_idempotency_idx").on(table.workspaceId, table.idempotencyKey),
+    index("sequence_runs_workspace_status_idx").on(table.workspaceId, table.status),
+  ],
 );
 
 export const channelsTable = pgTable(

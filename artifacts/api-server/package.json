@@ -8,7 +8,9 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:ssrf": "node --experimental-strip-types --test src/lib/webhook-transport.test.ts"
+    "test:ssrf": "node --experimental-strip-types --test src/lib/webhook-transport.test.ts",
+    "test:automation": "node --experimental-strip-types --test src/lib/automation.test.ts",
+    "test:automation:integration": "esbuild src/lib/automation.integration.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/automation-integration.test.cjs --external:pg-native --external:pino-pretty && node --test /tmp/automation-integration.test.cjs"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
