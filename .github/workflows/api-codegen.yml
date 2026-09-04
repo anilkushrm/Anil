@@ -18,6 +18,7 @@ permissions:
 
 jobs:
   check:
+    # This name is the required branch-protection context; keep them in sync.
     name: Check generated API output
     runs-on: ubuntu-latest
     steps:
