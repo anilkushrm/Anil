@@ -4,3 +4,4 @@
 - [Meta channel delivery](meta-channel-delivery.md) — Queue signed events before ACK, resume retries after partial work, and bind only server-validated signup assets.
 - [API integration test bundling](api-integration-test-bundling.md) — Run temporary CommonJS app bundles in production logger mode when pino-pretty is externalized.
 - [Repo-scoped validation scripts](validation-script-working-directory.md) — Normalize to the Git root before path-scoped checks invoked from package scripts.
+- [GitHub workflow publishing](github-workflow-publishing.md) — Empty repositories need an initial branch, and OAuth repo access may still be unable to publish workflow files.
