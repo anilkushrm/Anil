@@ -36,6 +36,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /codegen-validation:
+    get:
+      operationId: codegenValidation
+      tags: [health]
+      summary: Validate generated API drift detection
+      responses:
+        "204":
+          description: Validation response
   /auth/session:
     get:
       operationId: getSession
