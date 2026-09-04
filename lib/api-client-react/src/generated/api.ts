@@ -202,6 +202,83 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 
 
 
+export const getCodegenValidationUrl = () => {
+
+
+
+
+  return `/api/codegen-validation`
+}
+
+/**
+ * @summary Validate generated API drift detection
+ */
+export const codegenValidation = async ( options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getCodegenValidationUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getCodegenValidationQueryKey = () => {
+    return [
+    `/api/codegen-validation`
+    ] as const;
+    }
+
+
+export const getCodegenValidationQueryOptions = <TData = Awaited<ReturnType<typeof codegenValidation>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof codegenValidation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCodegenValidationQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof codegenValidation>>> = ({ signal }) => codegenValidation({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof codegenValidation>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type CodegenValidationQueryResult = NonNullable<Awaited<ReturnType<typeof codegenValidation>>>
+export type CodegenValidationQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Validate generated API drift detection
+ */
+
+export function useCodegenValidation<TData = Awaited<ReturnType<typeof codegenValidation>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof codegenValidation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getCodegenValidationQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getGetSessionUrl = () => {
 
 

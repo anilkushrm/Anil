@@ -18,6 +18,12 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Validate generated API drift detection
+ */
+export const CodegenValidationResponse = zod.void()
+
+
+/**
  * @summary Get the current session
  */
 export const GetSessionResponse = zod.object({
